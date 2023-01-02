@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,6 +10,11 @@ namespace Service
 {
     public class WCFService : IService
     {
+        public void DeleteEvent(int id)
+        {
+            throw new NotImplementedException();
+        }
+
         public void LogAction(string action)
         {
             Console.WriteLine(action);
@@ -31,7 +37,13 @@ namespace Service
 
         public void UpdateEvent(int id)
         {
-            throw new NotImplementedException();
+            NetTcpBinding binding = new NetTcpBinding();
+            EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:7000/ILoadBalancer"));
+
+            using (ServiceWCFClient proxy = new ServiceWCFClient(binding, address))
+            {
+                proxy.ModifyEvent(id);
+            }
         }
     }
 }

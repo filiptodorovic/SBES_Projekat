@@ -23,6 +23,9 @@ namespace Common
 		void UpdateEvent(int id);
 
 		[OperationContract]
+		void DeleteEvent(int id);
+
+		[OperationContract]
 		void Supervise();
 
 	}

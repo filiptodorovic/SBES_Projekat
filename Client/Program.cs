@@ -78,20 +78,44 @@ namespace Client
                 Console.WriteLine("{1} Read events that I generated");
                 Console.WriteLine("{2} Read all events");
                 Console.WriteLine("{3} Update an event");
-                Console.WriteLine("{4} Supervise all events");
+                Console.WriteLine("{4} Delete an event");
+                Console.WriteLine("{5} Supervise all events");
                 Console.WriteLine("{q} Exit DB manupulation");
                 input = Console.ReadLine();
 
-                switch (input)
+                using (WCFClient proxy = new WCFClient(binding, address))
                 {
-                    case "1":
-                        break;
-                    case "2":
-                        break;
-                    case "3":
-                        break;
-                    case "4":
-                        break;
+
+                    switch (input)
+                    {
+                        case "1":
+                            var events = proxy.ReadMyEvents();
+                            Console.WriteLine("My events: ");
+                            foreach(var e in events){
+                                Console.WriteLine(e);
+                            }
+                            break;
+                        case "2":
+                            var allevents = proxy.ReadAllEvents();
+                            Console.WriteLine("All events: ");
+                            foreach (var e in allevents)
+                            {
+                                Console.WriteLine(e);
+                            }
+                            break;
+                        case "3":
+                            Console.WriteLine("Enter ID of the event you want to MODIFY");
+                            string inp = Console.ReadLine();
+                            int input_num = Int32.Parse(inp);
+                            proxy.UpdateEvent(input_num);
+                            break;
+                        case "4":
+                            Console.WriteLine("Enter ID of the event you want to DELETE");
+
+                            break;
+                        case "5":
+                            break;
+                    }
                 }
             }
 

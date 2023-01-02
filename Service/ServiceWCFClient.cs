@@ -6,13 +6,13 @@ using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Client
+namespace Service
 {
-	public class WCFClient : ChannelFactory<IService>, IService, IDisposable
+	public class ServiceWCFClient : ChannelFactory<ILoadBalancer>, ILoadBalancer, IDisposable
 	{
-		IService factory;
+		ILoadBalancer factory;
 
-		public WCFClient(NetTcpBinding binding, EndpointAddress address)
+		public ServiceWCFClient(NetTcpBinding binding, EndpointAddress address)
 			: base(binding, address)
 		{
 			/// cltCertCN.SubjectName should be set to the client's username. .NET WindowsIdentity class provides information about Windows user running the given process
@@ -39,78 +39,16 @@ namespace Client
 			this.Close();
 		}
 
-        public void LogAction(string action)
+        public void ModifyEvent(int id)
         {
 			try
 			{
-				factory.LogAction(action);
+				factory.ModifyEvent(id);
 			}
 			catch (Exception e)
 			{
 				Console.WriteLine("[LogAction] ERROR = {0}", e.Message);
 			}
 		}
-
-        public List<string> ReadMyEvents()
-        {
-			try
-			{
-				return factory.ReadMyEvents();
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine("[ReadMyEvents] ERROR = {0}", e.Message);
-			}
-			return null;
-		}
-
-        public List<string> ReadAllEvents()
-        {
-			try
-			{
-				return factory.ReadAllEvents();
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine("[ReadAllEvents] ERROR = {0}", e.Message);
-			}
-			return null;
-		}
-
-        public void UpdateEvent(int id)
-        {
-			try
-			{
-				factory.UpdateEvent(id);
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine("[UpdateEvent] ERROR = {0}", e.Message);
-			}
-		}
-
-        public void Supervise()
-        {
-			try
-			{
-				factory.Supervise();
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine("[Supervise] ERROR = {0}", e.Message);
-			}
-		}
-
-        public void DeleteEvent(int id)
-        {
-			try
-			{
-				factory.DeleteEvent(id);
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine("[DeleteEvent] ERROR = {0}", e.Message);
-			}
-		}
     }
-}
+	}
