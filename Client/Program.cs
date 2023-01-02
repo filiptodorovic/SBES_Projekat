@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,8 +9,14 @@ namespace Client
 {
     class Program
     {
+        private static NetTcpBinding binding;
+        private static EndpointAddress address;
         static void Main(string[] args)
         {
+            binding = new NetTcpBinding();
+            address = new EndpointAddress(new Uri("net.tcp://localhost:9999/IService"));
+
+
             string key="";
 
             while (key!="q") {
@@ -45,9 +52,20 @@ namespace Client
                 }
                 Console.WriteLine("(q) Exit actions menu");
                 Console.WriteLine("Chose: ");
+
+                //Get the action
                 input = Console.ReadLine();
+                int input_num = Int32.Parse(input);
+                if (input_num > actions.Count)
+                {
+                    Console.WriteLine("Choose a valid action!");
+                    break;
+                }
 
                 //Log the action
+                using (WCFClient proxy = new WCFClient(binding, address)) {
+                    proxy.LogAction(actions[input_num]);
+                }
             }
         }
 
@@ -67,7 +85,6 @@ namespace Client
                 switch (input)
                 {
                     case "1":
-
                         break;
                     case "2":
                         break;
