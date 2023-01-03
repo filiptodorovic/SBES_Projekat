@@ -1,0 +1,28 @@
+NAPOMENA:
+POSTO RADIMO NA JEDNOM RACUNARU, SVE .PFX SERTIFIKATE INSTALIRAMO U PERSONAL, DOK SVE .CER SERTIFIKATE INSTALIRAMO U TRUSTED PEOPLE
+OSIM ONOG GLAVNOG TJ. TEST_CA
+
+AKO IMAMO SERVER I KLIJENT
+SERVER.PFX SE INSTALIRA NA SERVERU, CLIENT.PFX SE INSTALIRA NA KLIJENTU, DOK SE NA KLIJENTU INSTALIRA SERVER.CER U TRUSTED PEOPLE
+A NA SERVERU SE NE INSTALIRA NISTA
+
+Generalno kako se radi oko sertifikata:
+Uradimo sve one komande koje smu ponudjene u pdf-u. Na taj nacin smo dobili sve nama potrebne sertifikate i pfx i pvk i cer
+Potom, u mmc imamo 3 nama vazna foldera. 
+1) Trusted root certification author
+2) Personal
+3) Trusted People
+
+U ovaj pod 1) instaliramo JAVNI KLJUC onog nase TestCA cerfticikata. To radmo na sledeci nacin:
+selektujemo taj .cer fajl -> desni klik -> install certificate -> local machine -> place all certificates in the following store -> 
+odaberemo folder Trusted root certification author -> finish
+
+Potom je potrebno da instaliramo sve .pfx fajlove u ovaj Personal folder, tj. 2). TO radimo na sledeci nacin:
+desni klik na taj .pfx fajl -> install PFX -> odaberemo local machine -> next -> unesemo sifru -> cekiramo Mark as exportable 
+-> automatically select... -> finish
+Ovde bi trebalo da se stavi seritfikat koji je servisni, tj wcf service, medjutim, posto cemo mi i klijenta i servera 
+da pokrenemo na istoj masini, onda cemo i klijentski i serverski .pfx da instaliramo u nas Personal folder
+
+Sad moramo tim .pfx fajlovima da dodelimo prava pristupa, tj. da odredjeni korisnik ima pravo pristupa tom .pfx
+To radimo na sledeci nacin.
+desni klik na .pfx -> manage all private keys -> add -> ukucamo korisnika -> ok -> apply -> ok
