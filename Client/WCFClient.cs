@@ -1,4 +1,5 @@
 ﻿using Common;
+using DataBase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,7 +52,7 @@ namespace Client
 			}
 		}
 
-        public List<string> ReadMyEvents()
+        public List<DataBaseEntry> ReadMyEvents()
         {
 			try
 			{
@@ -64,7 +65,7 @@ namespace Client
 			return null;
 		}
 
-        public List<string> ReadAllEvents()
+        public List<DataBaseEntry> ReadAllEvents()
         {
 			try
 			{
@@ -77,11 +78,11 @@ namespace Client
 			return null;
 		}
 
-        public void UpdateEvent(int id)
+        public void UpdateEvent(int id,DateTime newTime)
         {
 			try
 			{
-				factory.UpdateEvent(id);
+				factory.UpdateEvent(id, newTime);
 			}
 			catch (Exception e)
 			{

@@ -1,4 +1,5 @@
 ﻿using Common;
+using DataBase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,8 +29,12 @@ namespace Service
 			factory = this.CreateChannel();
 		}
 
+        public void DeleteEvent(int id)
+        {
+            throw new NotImplementedException();
+        }
 
-		public void Dispose()
+        public void Dispose()
 		{
 			if (factory != null)
 			{
@@ -39,11 +44,11 @@ namespace Service
 			this.Close();
 		}
 
-        public void ModifyEvent(int id)
+        public void ModifyEvent(int id, DataBaseEntry entry)
         {
 			try
 			{
-				factory.ModifyEvent(id);
+				factory.ModifyEvent(id, entry);
 			}
 			catch (Exception e)
 			{

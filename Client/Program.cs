@@ -55,7 +55,15 @@ namespace Client
 
                 //Get the action
                 input = Console.ReadLine();
-                int input_num = Int32.Parse(input);
+                int input_num;
+
+                if (!int.TryParse(input, out input_num)) {
+                    if (input == "q")
+                        break;
+                    else
+                        continue;
+                }
+
                 if (input_num > actions.Count)
                 {
                     Console.WriteLine("Choose a valid action!");
@@ -106,10 +114,10 @@ namespace Client
                             }
                             break;
                         case "3":
-                            Console.WriteLine("Enter ID of the event you want to MODIFY");
+                            Console.WriteLine("Enter ID of the event you want to MODIFY to current timestamp");
                             inp = Console.ReadLine();
                             input_num = Int32.Parse(inp);
-                            proxy.UpdateEvent(input_num);
+                            proxy.UpdateEvent(input_num,DateTime.Now);
                             break;
                         case "4":
                             Console.WriteLine("Enter ID of the event you want to DELETE");

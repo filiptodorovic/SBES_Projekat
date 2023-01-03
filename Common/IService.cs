@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DataBase;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
@@ -14,13 +15,13 @@ namespace Common
 		void LogAction(string action);
 
 		[OperationContract]
-		List<string> ReadMyEvents();
+		List<DataBaseEntry> ReadMyEvents();
 
 		[OperationContract]
-		List<string> ReadAllEvents();
+		List<DataBaseEntry> ReadAllEvents();
 
 		[OperationContract]
-		void UpdateEvent(int id);
+		void UpdateEvent(int id,DateTime newTimestamp);
 
 		[OperationContract]
 		void DeleteEvent(int id);

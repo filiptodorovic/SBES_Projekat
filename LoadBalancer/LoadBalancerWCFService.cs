@@ -1,4 +1,5 @@
 ﻿using Common;
+using DataBase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,12 @@ namespace LoadBalancer
 {
     public class LoadBalancerWCFService : ILoadBalancer
     {
-        public void ModifyEvent(int id)
+        public void DeleteEvent(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ModifyEvent(int id, DataBaseEntry entry)
         {
             Console.WriteLine(id);
         }

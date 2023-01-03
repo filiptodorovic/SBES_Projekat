@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DataBase;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
@@ -11,7 +12,7 @@ namespace Common
     public interface ILoadBalancer
     {
         [OperationContract]
-        void ModifyEvent(int id);
+        void ModifyEvent(int id, DataBaseEntry entry);
 
         [OperationContract]
         void DeleteEvent(int id);
