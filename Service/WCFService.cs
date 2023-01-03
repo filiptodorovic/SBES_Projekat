@@ -12,6 +12,7 @@ namespace Service
     public class WCFService : IService
     {
         static int a = 0;
+        static string dbFilePath = "..\\..\\..\\DataBase\\DataBase.json";
         public void DeleteEvent(int id)
         {
             throw new NotImplementedException();
@@ -26,7 +27,7 @@ namespace Service
             entry.TimeStamp = DateTime.Now;
             entry.UniqueId = a++;
             entry.Username = "pera";
-            db.AddEntry("C://Users//Filip//source//repos//SBES_Projekat//DataBase//DataBase.json", entry);
+            db.AddEntry(dbFilePath, entry);
         }
 
         public List<DataBaseEntry> ReadAllEvents()
