@@ -12,5 +12,8 @@ namespace Common
     {
         [OperationContract]
         void ModifyEvent(int id);
+
+        [OperationContract]
+        void DeleteEvent(int id);
     }
 }

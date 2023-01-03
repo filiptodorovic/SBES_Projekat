@@ -85,6 +85,8 @@ namespace Client
 
                 using (WCFClient proxy = new WCFClient(binding, address))
                 {
+                    string inp;
+                    int input_num;
 
                     switch (input)
                     {
@@ -105,15 +107,18 @@ namespace Client
                             break;
                         case "3":
                             Console.WriteLine("Enter ID of the event you want to MODIFY");
-                            string inp = Console.ReadLine();
-                            int input_num = Int32.Parse(inp);
+                            inp = Console.ReadLine();
+                            input_num = Int32.Parse(inp);
                             proxy.UpdateEvent(input_num);
                             break;
                         case "4":
                             Console.WriteLine("Enter ID of the event you want to DELETE");
-
+                            inp = Console.ReadLine();
+                            input_num = Int32.Parse(inp);
+                            proxy.DeleteEvent(input_num);
                             break;
                         case "5":
+                            proxy.Supervise();
                             break;
                     }
                 }
