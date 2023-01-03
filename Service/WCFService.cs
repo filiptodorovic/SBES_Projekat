@@ -37,7 +37,7 @@ namespace Service
 
         public List<DataBaseEntry> ReadAllEvents()
         {
-            throw new NotImplementedException();
+            return DataBaseCRUD.ReadAllEntries();
         }
 
         public List<DataBaseEntry> ReadMyEvents()
