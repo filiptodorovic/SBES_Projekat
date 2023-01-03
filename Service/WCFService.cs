@@ -12,22 +12,27 @@ namespace Service
     public class WCFService : IService
     {
         static int a = 0;
-        static string dbFilePath = "..\\..\\..\\DataBase\\DataBase.json";
-        public void DeleteEvent(int id)
+        public bool DeleteEvent(int id)
         {
-            throw new NotImplementedException();
+            NetTcpBinding binding = new NetTcpBinding();
+            EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:7000/ILoadBalancer"));
+
+
+            using (ServiceWCFClient proxy = new ServiceWCFClient(binding, address))
+            {
+                return proxy.DeleteEvent(id);
+            }
         }
 
         public void LogAction(string action)
         {
-            DataBaseCRUD db = new DataBaseCRUD();
             DataBaseEntry entry = new DataBaseEntry();
             entry.SId = "23424";
             entry.ActionName = action;
             entry.TimeStamp = DateTime.Now;
             entry.UniqueId = a++;
             entry.Username = "pera";
-            db.AddEntry(dbFilePath, entry);
+            DataBaseCRUD.AddEntry(entry);
         }
 
         public List<DataBaseEntry> ReadAllEvents()
@@ -45,7 +50,7 @@ namespace Service
             throw new NotImplementedException();
         }
 
-        public void UpdateEvent(int id,DateTime newTimestamp)
+        public bool UpdateEvent(int id,DateTime newTimestamp)
         {
             NetTcpBinding binding = new NetTcpBinding();
             EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:7000/ILoadBalancer"));
@@ -55,7 +60,7 @@ namespace Service
             {
                 DataBaseEntry dbEntry = new DataBaseEntry();
                 dbEntry.TimeStamp = newTimestamp;
-                proxy.ModifyEvent(id,dbEntry);
+                return proxy.ModifyEvent(id,dbEntry);
             }
         }
 

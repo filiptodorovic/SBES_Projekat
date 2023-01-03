@@ -21,10 +21,10 @@ namespace Common
 		List<DataBaseEntry> ReadAllEvents();
 
 		[OperationContract]
-		void UpdateEvent(int id,DateTime newTimestamp);
+		bool UpdateEvent(int id,DateTime newTimestamp);
 
 		[OperationContract]
-		void DeleteEvent(int id);
+		bool DeleteEvent(int id);
 
 		[OperationContract]
 		void Supervise();

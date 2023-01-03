@@ -12,9 +12,9 @@ namespace Common
     public interface ILoadBalancer
     {
         [OperationContract]
-        void ModifyEvent(int id, DataBaseEntry entry);
+        bool ModifyEvent(int id, DataBaseEntry entry);
 
         [OperationContract]
-        void DeleteEvent(int id);
+        bool DeleteEvent(int id);
     }
 }

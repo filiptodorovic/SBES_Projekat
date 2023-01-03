@@ -78,15 +78,16 @@ namespace Client
 			return null;
 		}
 
-        public void UpdateEvent(int id,DateTime newTime)
+        public bool UpdateEvent(int id,DateTime newTime)
         {
 			try
 			{
-				factory.UpdateEvent(id, newTime);
+				return factory.UpdateEvent(id, newTime);
 			}
 			catch (Exception e)
 			{
 				Console.WriteLine("[UpdateEvent] ERROR = {0}", e.Message);
+				return false;
 			}
 		}
 
@@ -102,15 +103,16 @@ namespace Client
 			}
 		}
 
-        public void DeleteEvent(int id)
+        public bool DeleteEvent(int id)
         {
 			try
 			{
-				factory.DeleteEvent(id);
+				return factory.DeleteEvent(id);
 			}
 			catch (Exception e)
 			{
 				Console.WriteLine("[DeleteEvent] ERROR = {0}", e.Message);
+				return false;
 			}
 		}
     }

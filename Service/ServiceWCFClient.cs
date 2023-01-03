@@ -29,10 +29,18 @@ namespace Service
 			factory = this.CreateChannel();
 		}
 
-        public void DeleteEvent(int id)
+        public bool DeleteEvent(int id)
         {
-            throw new NotImplementedException();
-        }
+			try
+			{
+				return factory.DeleteEvent(id);
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("[DeleteEvent] ERROR = {0}", e.Message);
+				return false;
+			}
+		}
 
         public void Dispose()
 		{
@@ -44,15 +52,16 @@ namespace Service
 			this.Close();
 		}
 
-        public void ModifyEvent(int id, DataBaseEntry entry)
+        public bool ModifyEvent(int id, DataBaseEntry entry)
         {
 			try
 			{
-				factory.ModifyEvent(id, entry);
+				return factory.ModifyEvent(id, entry);
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[LogAction] ERROR = {0}", e.Message);
+				Console.WriteLine("[ModifyEvent] ERROR = {0}", e.Message);
+				return false;
 			}
 		}
     }

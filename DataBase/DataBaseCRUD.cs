@@ -10,9 +10,11 @@ using System.Threading.Tasks;
 
 namespace DataBase
 {
-    public class DataBaseCRUD : IDataBaseCRUD
+    public class DataBaseCRUD
     {
-        public bool AddEntry(string filePath, DataBaseEntry entry)
+        static string filePath = "..\\..\\..\\DataBase\\DataBase.json";
+
+        public static bool AddEntry(DataBaseEntry entry)
         {
             try
             {
@@ -38,7 +40,7 @@ namespace DataBase
             }
         }
 
-        public bool DeleteEntryById(string filePath, int uniqueId)
+        public static bool DeleteEntryById(int uniqueId)
         {
             bool returnValue = false;
             try
@@ -62,7 +64,7 @@ namespace DataBase
             }
         }
 
-        public bool DeleteEntryBySId(string filePath, string sId)
+        public static bool DeleteEntryBySId(string sId)
         {
             bool returnValue = false;
             try
@@ -86,7 +88,7 @@ namespace DataBase
             }
         }
 
-        public DataBaseEntry FindEntryById(string filePath, int uniqueId)
+        public static DataBaseEntry FindEntryById(int uniqueId)
         {
             try
             {
@@ -101,7 +103,7 @@ namespace DataBase
             }
         }
 
-        public DataBaseEntry FindEntryBySId(string filePath, string sId)
+        public static DataBaseEntry FindEntryBySId(string sId)
         {
             try
             {
@@ -116,7 +118,7 @@ namespace DataBase
             }
         }
 
-        public bool ModifyEntry(string filePath, int uniqueId, DataBaseEntry entry)
+        public static bool ModifyEntry(int uniqueId, DataBaseEntry entry)
         {
             bool returnValue = false;
             try
@@ -142,7 +144,7 @@ namespace DataBase
             }
         }
 
-        public List<DataBaseEntry> ReadAllEntries(string filePath)
+        public static List<DataBaseEntry> ReadAllEntries()
         {
             List<DataBaseEntry> entries = new List<DataBaseEntry>();
             try

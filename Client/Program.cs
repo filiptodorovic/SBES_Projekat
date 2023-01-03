@@ -117,13 +117,25 @@ namespace Client
                             Console.WriteLine("Enter ID of the event you want to MODIFY to current timestamp");
                             inp = Console.ReadLine();
                             input_num = Int32.Parse(inp);
-                            proxy.UpdateEvent(input_num,DateTime.Now);
+                            if (proxy.UpdateEvent(input_num, DateTime.Now)) {
+                                Console.WriteLine("Success");
+                            }
+                            else {
+                                Console.WriteLine("Failed to update!");
+                            }
                             break;
                         case "4":
                             Console.WriteLine("Enter ID of the event you want to DELETE");
                             inp = Console.ReadLine();
                             input_num = Int32.Parse(inp);
-                            proxy.DeleteEvent(input_num);
+                            if(proxy.DeleteEvent(input_num))
+                            {
+                                Console.WriteLine("Success");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Failed to delete!");
+                            }
                             break;
                         case "5":
                             proxy.Supervise();
