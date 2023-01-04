@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SubscribtionService.cs" />
     <Compile Include="WCFClient.cs" />
     <Compile Include="XmlIO.cs" />
     <Compile Include="Program.cs" />

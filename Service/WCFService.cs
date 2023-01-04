@@ -1,4 +1,4 @@
-﻿using Common;
+using Common;
 using DataBase;
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,12 @@ namespace Service
 {
     public class WCFService : IService
     {
+
+
+        static int subscriptionCounter = 0;
+        static Dictionary<string, int> subscribedUsers = new Dictionary<string, int>();
         static Random a = new Random();
+
         public bool DeleteEvent(int id)
         {
             NetTcpBinding binding = new NetTcpBinding();
@@ -22,7 +27,12 @@ namespace Service
 
             using (ServiceWCFClient proxy = new ServiceWCFClient(binding, address))
             {
-                return proxy.DeleteEvent(id);
+                bool eventDeleted = proxy.DeleteEvent(id);
+                if(eventDeleted)
+                {
+                    NotifySubscribedUsers();
+                }
+                return eventDeleted;
             }
         }
 
@@ -37,7 +47,8 @@ namespace Service
             entry.TimeStamp = DateTime.Now;
             entry.UniqueId = a.Next();
             entry.Username = username;
-            DataBaseCRUD.AddEntry(entry);
+            if (DataBaseCRUD.AddEntry(entry))
+                NotifySubscribedUsers();
         }
 
         public List<DataBaseEntry> ReadAllEvents()
@@ -68,11 +79,54 @@ namespace Service
             {
                 DataBaseEntry dbEntry = new DataBaseEntry();
                 dbEntry.TimeStamp = newTimestamp;
+
                 if (action != "")
                     dbEntry.ActionName = action;
-                return proxy.ModifyEvent(id,dbEntry);
+                    
+                bool eventModified = proxy.ModifyEvent(id, dbEntry);
+                if(eventModified)
+                {
+                    NotifySubscribedUsers();
+                }
+                return eventModified;
+
             }
         }
+
+        public int Subscribe()
+        {
+            int port = 8000;
+
+            //get the clients username
+            IIdentity identity = Thread.CurrentPrincipal.Identity;
+            WindowsIdentity windowsIdentity = identity as WindowsIdentity;
+            string username = windowsIdentity.Name;
+
+            //update subscribeUsers evidency
+            if (subscribedUsers.ContainsKey(username))
+                subscribedUsers[username] = port + subscriptionCounter;
+            else
+                subscribedUsers.Add(username, port + subscriptionCounter);
+
+            subscriptionCounter++;
+
+            //return the port on which  subscribed client will listen for notifications
+            return subscribedUsers[username];
+        }
+
+        private static void NotifySubscribedUsers()
+        {
+            foreach (int userPort in subscribedUsers.Values)
+            {
+                NetTcpBinding netTcpBinding = new NetTcpBinding();
+                EndpointAddress endpointAddress = new EndpointAddress(new Uri("net.tcp://localhost:" + userPort.ToString() + "/ISubscribtionService"));
+                using (ServiceSubscribedClients proxySubscribedClients = new ServiceSubscribedClients(netTcpBinding, endpointAddress))
+                {
+                    proxySubscribedClients.SendNotifications(DataBaseCRUD.ReadAllEntries());
+                }
+            }
+        }
+
 
     }
 }

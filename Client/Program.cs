@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
@@ -11,6 +12,10 @@ namespace Client
     {
         private static NetTcpBinding binding;
         private static EndpointAddress address;
+
+        //on this host client listens for notifications
+        private static ServiceHost subscribedHost;
+        private static bool isSubscribed = false;
         static void Main(string[] args)
         {
             binding = new NetTcpBinding();
@@ -65,6 +70,7 @@ namespace Client
                 Console.WriteLine("{3} Update an event");
                 Console.WriteLine("{4} Delete an event");
                 Console.WriteLine("{5} Supervise all events");
+                Console.WriteLine("{6} Subscribe to be notified about updates");
                 Console.WriteLine("{q} Exit DB manupulation");
                 input = Console.ReadLine();
 
@@ -122,6 +128,21 @@ namespace Client
                             break;
                         case "5":
                             proxy.Supervise();
+                            break;
+                        case "6":
+                            if (!isSubscribed)
+                            {
+                                int port = proxy.Subscribe();
+                                if (port != 1)
+                                {
+                                    isSubscribed = true;
+                                    NetTcpBinding subscribedClientBinding = new NetTcpBinding();
+                                    string subscribedClientAddress = "net.tcp://localhost:" + port.ToString() + "/ISubscribtionService";
+                                    subscribedHost = new ServiceHost(typeof(SubscribtionService));
+                                    subscribedHost.AddServiceEndpoint(typeof(ISubscribtionService), subscribedClientBinding, subscribedClientAddress);
+                                    subscribedHost.Open();
+                                }
+                            }
                             break;
                     }
                 }
