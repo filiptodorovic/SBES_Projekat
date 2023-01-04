@@ -153,6 +153,7 @@ namespace Client
                                 string subscribedClientAddress = "net.tcp://localhost:" + port.ToString() + "/ISubscribtionService";
                                 subscribedHost = new ServiceHost(typeof(SubscribtionService));
                                 subscribedHost.AddServiceEndpoint(typeof(ISubscribtionService), subscribedClientBinding, subscribedClientAddress);
+                                subscribedHost.Open();
                             }
                             break;
                     }
