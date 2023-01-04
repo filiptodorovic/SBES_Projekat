@@ -58,7 +58,7 @@ namespace Service
             throw new NotImplementedException();
         }
 
-        public bool UpdateEvent(int id,DateTime newTimestamp)
+        public bool UpdateEvent(int id, string action, DateTime newTimestamp)
         {
             NetTcpBinding binding = new NetTcpBinding();
             EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:7000/ILoadBalancer"));
@@ -68,6 +68,8 @@ namespace Service
             {
                 DataBaseEntry dbEntry = new DataBaseEntry();
                 dbEntry.TimeStamp = newTimestamp;
+                if (action != "")
+                    dbEntry.ActionName = action;
                 return proxy.ModifyEvent(id,dbEntry);
             }
         }

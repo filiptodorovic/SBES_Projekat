@@ -41,10 +41,9 @@ namespace Client
         }
 
         private static void ChoseAction() {
-            string input = "";
             List<string> actions = XmlIO.DeSerializeObject<List<string>>("..\\..\\resourceFile.xml");
 
-            int input_num = GetChosenAction(input, actions);
+            int input_num = GetChosenAction(actions);
             if (input_num != -1)
             {
                 //Log the action
@@ -95,7 +94,13 @@ namespace Client
                             Console.WriteLine("Enter ID of the event you want to MODIFY to current timestamp");
                             inp = Console.ReadLine();
                             input_num = Int32.Parse(inp);
-                            if (proxy.UpdateEvent(input_num, DateTime.Now)) {
+                            Console.WriteLine("Enter a different action('q' if you don't want to change it):");
+                            List<string> actions = XmlIO.DeSerializeObject<List<string>>("..\\..\\resourceFile.xml");
+                            int action = GetChosenAction(actions);
+                            string new_action = "";
+                            if (action != -1)
+                                new_action = actions[action];
+                            if (proxy.UpdateEvent(input_num, new_action, DateTime.Now)) {
                                 Console.WriteLine("Success");
                             }
                             else {
@@ -124,8 +129,9 @@ namespace Client
 
         }
 
-        private static int GetChosenAction(string userInput, List<string> actions)
+        private static int GetChosenAction(List<string> actions)
         {
+            string userInput = "";
             while (userInput != "q")
             {
                 Console.WriteLine("\t++++++ACTIONS++++++");
