@@ -41,7 +41,8 @@ namespace Service
             entry.TimeStamp = DateTime.Now;
             entry.UniqueId = a++;
             entry.Username = "pera";
-            DataBaseCRUD.AddEntry(entry);
+            if (DataBaseCRUD.AddEntry(entry))
+                NotifySubscribedUsers();
         }
 
         public List<DataBaseEntry> ReadAllEvents()

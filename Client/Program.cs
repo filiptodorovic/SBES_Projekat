@@ -15,6 +15,7 @@ namespace Client
 
         //on this host client listens for notifications
         private static ServiceHost subscribedHost;
+        private static bool isSubscribed = false;
         static void Main(string[] args)
         {
             binding = new NetTcpBinding();
@@ -146,14 +147,18 @@ namespace Client
                             proxy.Supervise();
                             break;
                         case "6":
-                            int port = proxy.Subscribe();
-                            if (port != 1)
+                            if (!isSubscribed)
                             {
-                                NetTcpBinding subscribedClientBinding = new NetTcpBinding();
-                                string subscribedClientAddress = "net.tcp://localhost:" + port.ToString() + "/ISubscribtionService";
-                                subscribedHost = new ServiceHost(typeof(SubscribtionService));
-                                subscribedHost.AddServiceEndpoint(typeof(ISubscribtionService), subscribedClientBinding, subscribedClientAddress);
-                                subscribedHost.Open();
+                                int port = proxy.Subscribe();
+                                if (port != 1)
+                                {
+                                    isSubscribed = true;
+                                    NetTcpBinding subscribedClientBinding = new NetTcpBinding();
+                                    string subscribedClientAddress = "net.tcp://localhost:" + port.ToString() + "/ISubscribtionService";
+                                    subscribedHost = new ServiceHost(typeof(SubscribtionService));
+                                    subscribedHost.AddServiceEndpoint(typeof(ISubscribtionService), subscribedClientBinding, subscribedClientAddress);
+                                    subscribedHost.Open();
+                                }
                             }
                             break;
                     }
