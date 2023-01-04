@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataBase", "DataBase\DataBa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{BEE68C17-ECD6-48FA-9828-42DC60342F09}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecurityManager", "SecurityManager\SecurityManager.csproj", "{C4B285C1-B5DC-4F8C-8CC4-B6AB7F4CB3F4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{BEE68C17-ECD6-48FA-9828-42DC60342F09}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BEE68C17-ECD6-48FA-9828-42DC60342F09}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BEE68C17-ECD6-48FA-9828-42DC60342F09}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4B285C1-B5DC-4F8C-8CC4-B6AB7F4CB3F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4B285C1-B5DC-4F8C-8CC4-B6AB7F4CB3F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4B285C1-B5DC-4F8C-8CC4-B6AB7F4CB3F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4B285C1-B5DC-4F8C-8CC4-B6AB7F4CB3F4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
