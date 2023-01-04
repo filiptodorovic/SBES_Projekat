@@ -29,5 +29,8 @@ namespace Common
 		[OperationContract]
 		void Supervise();
 
+		[OperationContract]
+		int Subscribe();
+
 	}
 }

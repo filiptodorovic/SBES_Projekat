@@ -115,5 +115,18 @@ namespace Client
 				return false;
 			}
 		}
+
+		public int Subscribe()
+        {
+            try
+            {
+				return factory.Subscribe();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[Subscribe] ERROR = {0}", e.Message);
+				return 1;
+            }
+        }
     }
 }

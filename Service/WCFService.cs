@@ -3,8 +3,10 @@ using DataBase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.ServiceModel;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Service
@@ -12,6 +14,8 @@ namespace Service
     public class WCFService : IService
     {
         static int a = 0;
+        static int subscriptionCounter = 0;
+        static Dictionary<string, int> subscribedUsers = new Dictionary<string, int>();
         public bool DeleteEvent(int id)
         {
             NetTcpBinding binding = new NetTcpBinding();
@@ -20,7 +24,12 @@ namespace Service
 
             using (ServiceWCFClient proxy = new ServiceWCFClient(binding, address))
             {
-                return proxy.DeleteEvent(id);
+                bool eventDeleted = proxy.DeleteEvent(id);
+                if(eventDeleted)
+                {
+                    NotifySubscribedUsers();
+                }
+                return eventDeleted;
             }
         }
 
@@ -60,9 +69,49 @@ namespace Service
             {
                 DataBaseEntry dbEntry = new DataBaseEntry();
                 dbEntry.TimeStamp = newTimestamp;
-                return proxy.ModifyEvent(id,dbEntry);
+                bool eventModified = proxy.ModifyEvent(id, dbEntry);
+                if(eventModified)
+                {
+                    NotifySubscribedUsers();
+                }
+                return eventModified;
             }
         }
+
+        public int Subscribe()
+        {
+            int port = 8000;
+
+            //get the clients username
+            IIdentity identity = Thread.CurrentPrincipal.Identity;
+            WindowsIdentity windowsIdentity = identity as WindowsIdentity;
+            string username = windowsIdentity.Name;
+
+            //update subscribeUsers evidency
+            if (subscribedUsers.ContainsKey(username))
+                subscribedUsers[username] = port + subscriptionCounter;
+            else
+                subscribedUsers.Add(username, port + subscriptionCounter);
+
+            subscriptionCounter++;
+
+            //return the port on which  subscribed client will listen for notifications
+            return subscribedUsers[username];
+        }
+
+        private static void NotifySubscribedUsers()
+        {
+            foreach (int userPort in subscribedUsers.Values)
+            {
+                NetTcpBinding netTcpBinding = new NetTcpBinding();
+                EndpointAddress endpointAddress = new EndpointAddress(new Uri("net.tcp://localhost:" + userPort.ToString() + "/ISubscribtionService"));
+                using (ServiceSubscribedClients proxySubscribedClients = new ServiceSubscribedClients(netTcpBinding, endpointAddress))
+                {
+                    proxySubscribedClients.SendNotifications(DataBaseCRUD.ReadAllEntries());
+                }
+            }
+        }
+
 
     }
 }
