@@ -21,7 +21,7 @@ namespace Common
 		List<DataBaseEntry> ReadAllEvents();
 
 		[OperationContract]
-		bool UpdateEvent(int id,DateTime newTimestamp);
+		bool UpdateEvent(int id, string action,DateTime newTimestamp);
 
 		[OperationContract]
 		bool DeleteEvent(int id);
