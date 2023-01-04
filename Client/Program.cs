@@ -43,35 +43,13 @@ namespace Client
         private static void ChoseAction() {
             string input = "";
             List<string> actions = XmlIO.DeSerializeObject<List<string>>("..\\..\\resourceFile.xml");
-            while (input != "q")
+
+            int input_num = GetChosenAction(input, actions);
+            if (input_num != -1)
             {
-                Console.WriteLine("\t++++++ACTIONS++++++");
-                for (int i = 0; i < actions.Count; i++)
-                {
-                    Console.WriteLine("({0}) {1}", i, actions[i]);
-                }
-                Console.WriteLine("(q) Exit actions menu");
-                Console.WriteLine("Chose: ");
-
-                //Get the action
-                input = Console.ReadLine();
-                int input_num;
-
-                if (!int.TryParse(input, out input_num)) {
-                    if (input == "q")
-                        break;
-                    else
-                        continue;
-                }
-
-                if (input_num > actions.Count)
-                {
-                    Console.WriteLine("Choose a valid action!");
-                    break;
-                }
-
                 //Log the action
-                using (WCFClient proxy = new WCFClient(binding, address)) {
+                using (WCFClient proxy = new WCFClient(binding, address))
+                {
                     proxy.LogAction(actions[input_num]);
                 }
             }
@@ -144,6 +122,42 @@ namespace Client
                 }
             }
 
+        }
+
+        private static int GetChosenAction(string userInput, List<string> actions)
+        {
+            while (userInput != "q")
+            {
+                Console.WriteLine("\t++++++ACTIONS++++++");
+                for (int i = 0; i < actions.Count; i++)
+                {
+                    Console.WriteLine("({0}) {1}", i, actions[i]);
+                }
+                Console.WriteLine("(q) Exit actions menu");
+                Console.WriteLine("Chose: ");
+
+                //Get the action
+                userInput = Console.ReadLine();
+                int input_num;
+
+                if (!int.TryParse(userInput, out input_num))
+                {
+                    if (userInput == "q")
+                        break;
+                    else
+                        continue;
+                }
+
+                if (input_num > actions.Count || input_num < 0)
+                {
+                    Console.WriteLine("Choose a valid action!");
+                    continue;
+                }
+
+                return input_num;
+            }
+
+            return -1;
         }
     }
 }
