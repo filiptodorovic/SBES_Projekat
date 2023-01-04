@@ -78,11 +78,11 @@ namespace Client
 			return null;
 		}
 
-        public bool UpdateEvent(int id,DateTime newTime)
+        public bool UpdateEvent(int id, string action,DateTime newTime)
         {
 			try
 			{
-				return factory.UpdateEvent(id, newTime);
+				return factory.UpdateEvent(id, action, newTime);
 			}
 			catch (Exception e)
 			{

@@ -1,4 +1,4 @@
-﻿using Common;
+using Common;
 using DataBase;
 using System;
 using System.Collections.Generic;
@@ -13,9 +13,12 @@ namespace Service
 {
     public class WCFService : IService
     {
-        static int a = 0;
+
+
         static int subscriptionCounter = 0;
         static Dictionary<string, int> subscribedUsers = new Dictionary<string, int>();
+        static Random a = new Random();
+
         public bool DeleteEvent(int id)
         {
             NetTcpBinding binding = new NetTcpBinding();
@@ -35,14 +38,16 @@ namespace Service
 
         public void LogAction(string action)
         {
+            IIdentity identity = Thread.CurrentPrincipal.Identity;
+            WindowsIdentity windowsIdentity = identity as WindowsIdentity;
+            string username = windowsIdentity.Name.Split('\\')[1];
             DataBaseEntry entry = new DataBaseEntry();
             entry.SId = "23424";
             entry.ActionName = action;
             entry.TimeStamp = DateTime.Now;
-            entry.UniqueId = a++;
-            entry.Username = "pera";
-            if (DataBaseCRUD.AddEntry(entry))
-                NotifySubscribedUsers();
+            entry.UniqueId = a.Next();
+            entry.Username = username;
+            DataBaseCRUD.AddEntry(entry);
         }
 
         public List<DataBaseEntry> ReadAllEvents()
@@ -52,7 +57,10 @@ namespace Service
 
         public List<DataBaseEntry> ReadMyEvents()
         {
-            throw new NotImplementedException();
+            IIdentity identity = Thread.CurrentPrincipal.Identity;
+            WindowsIdentity windowsIdentity = identity as WindowsIdentity;
+            string username = windowsIdentity.Name.Split('\\')[1];
+            return DataBaseCRUD.ReadAllEntries().Where(x => x.Username == username).ToList();
         }
 
         public void Supervise()
@@ -60,7 +68,7 @@ namespace Service
             throw new NotImplementedException();
         }
 
-        public bool UpdateEvent(int id,DateTime newTimestamp)
+        public bool UpdateEvent(int id, string action, DateTime newTimestamp)
         {
             NetTcpBinding binding = new NetTcpBinding();
             EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:7000/ILoadBalancer"));
@@ -70,12 +78,17 @@ namespace Service
             {
                 DataBaseEntry dbEntry = new DataBaseEntry();
                 dbEntry.TimeStamp = newTimestamp;
+
+                if (action != "")
+                    dbEntry.ActionName = action;
+                    
                 bool eventModified = proxy.ModifyEvent(id, dbEntry);
                 if(eventModified)
                 {
                     NotifySubscribedUsers();
                 }
                 return eventModified;
+
             }
         }
 
