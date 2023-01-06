@@ -61,9 +61,7 @@ namespace DataBase
         {
             try
             {
-                this.SId = entry.SId;
                 this.TimeStamp = entry.TimeStamp;
-                this.Username = entry.Username;
                 this.ActionName = entry.ActionName;
                 return true;
             }
