@@ -24,7 +24,8 @@ namespace SecurityManager
 
         public bool Evaluate(EvaluationContext evaluationContext, ref object state)
         {
-            if(!evaluationContext.Properties.TryGetValue("Identites", out object list))
+            //ovde je bilo identites a treba identities
+            if(!evaluationContext.Properties.TryGetValue("Identities", out object list))
             {
                 return false;
             }

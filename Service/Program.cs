@@ -36,7 +36,6 @@ namespace Service
 
 			host.Credentials.ServiceCertificate.Certificate = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvCertCN);
 			
-			
 			host.Authorization.ServiceAuthorizationManager = new CustomAuthorizationManager();
 			host.Authorization.PrincipalPermissionMode = PrincipalPermissionMode.Custom;
 			List<IAuthorizationPolicy> policies = new List<IAuthorizationPolicy>();
