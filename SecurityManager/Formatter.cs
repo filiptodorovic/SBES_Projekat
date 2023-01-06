@@ -29,6 +29,14 @@ namespace SecurityManager
                 parts = winLogonName.Split('\\');
                 return parts[1];
             }
+            else if (winLogonName.Contains("CN"))
+            {
+                // sertifikati, name je formiran kao CN=imeKorisnika;
+                int startIndex = winLogonName.IndexOf("=") + 1;
+                int endIndex = winLogonName.IndexOf(";");
+                string s = winLogonName.Substring(startIndex, endIndex - startIndex);
+                return s;
+            }
             else
             {
                 return winLogonName;
