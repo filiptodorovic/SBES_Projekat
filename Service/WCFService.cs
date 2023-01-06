@@ -1,5 +1,6 @@
 using Common;
 using DataBase;
+using SecurityManager;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,9 +42,7 @@ namespace Service
 
         public void LogAction(string action)
         {
-            IIdentity identity = Thread.CurrentPrincipal.Identity;
-            WindowsIdentity windowsIdentity = identity as WindowsIdentity;
-            string username = windowsIdentity.Name.Split('\\')[1];
+            string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
             DataBaseEntry entry = new DataBaseEntry();
             entry.SId = "23424";
             entry.ActionName = action;
@@ -61,9 +60,7 @@ namespace Service
 
         public List<DataBaseEntry> ReadMyEvents()
         {
-            IIdentity identity = Thread.CurrentPrincipal.Identity;
-            WindowsIdentity windowsIdentity = identity as WindowsIdentity;
-            string username = windowsIdentity.Name.Split('\\')[1];
+            string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
             return DataBaseCRUD.ReadAllEntries().Where(x => x.Username == username).ToList();
         }
 

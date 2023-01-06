@@ -40,7 +40,6 @@ namespace LoadBalancer
         static void ThreadDelete(Object parameter)
         {
             int id = Convert.ToInt32(parameter);
-            DataBaseCRUD.DeleteEntryById(id);
             if (DataBaseCRUD.DeleteEntryById(id))
             {
                 Console.WriteLine("Sucessfully deleted entity with ID: {0}", id);

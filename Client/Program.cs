@@ -1,7 +1,9 @@
 ﻿using Common;
+using SecurityManager;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,11 +18,18 @@ namespace Client
         //on this host client listens for notifications
         private static ServiceHost subscribedHost;
         private static bool isSubscribed = false;
+        private static string srvCertCN = "sbesservice";
         static void Main(string[] args)
         {
             binding = new NetTcpBinding();
             address = new EndpointAddress(new Uri("net.tcp://localhost:9999/IService"));
 
+            binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Certificate;
+
+            /// Use CertManager class to obtain the certificate based on the "srvCertCN" representing the expected service identity.
+            X509Certificate2 srvCert = CertManager.GetCertificateFromStorage(StoreName.TrustedPeople, StoreLocation.LocalMachine, srvCertCN);
+            address = new EndpointAddress(new Uri("net.tcp://localhost:9999/IService"),
+                                      new X509CertificateEndpointIdentity(srvCert));
 
             string key="";
 
