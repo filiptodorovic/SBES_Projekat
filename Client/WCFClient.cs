@@ -42,7 +42,19 @@ namespace Client
 			this.Close();
 		}
 
-        public List<DataBaseEntry> ReadMyEvents()
+		public void LogAction(byte[] message, byte[] signature)
+		{
+			try
+			{
+				factory.LogAction(message, signature);
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("[LogAction] ERROR = {0}", e.Message);
+			}
+		}
+
+		public List<DataBaseEntry> ReadMyEvents()
         {
 			try
 			{
@@ -118,17 +130,5 @@ namespace Client
 				return 1;
             }
         }
-
-        public void LogAction(byte[] message, byte[] signature)
-        {
-			try
-			{
-				factory.LogAction(message, signature);
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine("[LogAction] ERROR = {0}", e.Message);
-			}
-		}
     }
 }
