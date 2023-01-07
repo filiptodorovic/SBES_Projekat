@@ -28,8 +28,7 @@ namespace Client
 
             // Set appropriate client's certificate on the channel. Use CertManager class to obtain the certificate based on the "cltCertCN"
             this.Credentials.ClientCertificate.Certificate = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, cltCertCN);
-
-            factory = this.CreateChannel();
+			factory = this.CreateChannel();
 		}
 
 
@@ -43,11 +42,11 @@ namespace Client
 			this.Close();
 		}
 
-        public void LogAction(string action)
-        {
+		public void LogAction(byte[] message, byte[] signature)
+		{
 			try
 			{
-				factory.LogAction(action);
+				factory.LogAction(message, signature);
 			}
 			catch (Exception e)
 			{
@@ -55,7 +54,7 @@ namespace Client
 			}
 		}
 
-        public List<DataBaseEntry> ReadMyEvents()
+		public List<DataBaseEntry> ReadMyEvents()
         {
 			try
 			{

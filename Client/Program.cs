@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Principal;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ namespace Client
         private static ServiceHost subscribedHost;
         private static bool isSubscribed = false;
         private static string srvCertCN = "sbesservice";
+        private static X509Certificate2 clientCert = null;
         static void Main(string[] args)
         {
             binding = new NetTcpBinding();
@@ -30,6 +32,9 @@ namespace Client
             X509Certificate2 srvCert = CertManager.GetCertificateFromStorage(StoreName.TrustedPeople, StoreLocation.LocalMachine, srvCertCN);
             address = new EndpointAddress(new Uri("net.tcp://localhost:9999/IService"),
                                       new X509CertificateEndpointIdentity(srvCert));
+
+            string cltCertCN = Formatter.ParseName(WindowsIdentity.GetCurrent().Name);
+            clientCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, cltCertCN);
 
             string key="";
 
@@ -60,10 +65,12 @@ namespace Client
             int input_num = GetChosenAction(actions);
             if (input_num != -1)
             {
+                byte[] encodedMessage = Crypto3DES.EncryptMessage(actions[input_num], clientCert.GetPublicKeyString());
+                byte[] signature = DigitalSignature.Create(actions[input_num], clientCert);
                 //Log the action
                 using (WCFClient proxy = new WCFClient(binding, address))
                 {
-                    proxy.LogAction(actions[input_num]);
+                    proxy.LogAction(encodedMessage,signature);
                 }
             }
         }
