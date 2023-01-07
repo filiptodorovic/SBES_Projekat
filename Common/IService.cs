@@ -12,7 +12,7 @@ namespace Common
 	public interface IService
 	{
 		[OperationContract]
-		void LogAction(string action);
+		void LogAction(byte[] message, byte[] signature);
 
 		[OperationContract]
 		List<DataBaseEntry> ReadMyEvents();
