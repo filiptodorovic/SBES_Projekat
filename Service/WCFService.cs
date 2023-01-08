@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Permissions;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.ServiceModel;
 using System.Text;
@@ -42,18 +43,6 @@ namespace Service
             }
         }
 
-        public void LogAction(string action)
-        {
-            string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
-            DataBaseEntry entry = new DataBaseEntry();
-            entry.SId = "23424";
-            entry.ActionName = action;
-            entry.TimeStamp = DateTime.Now;
-            entry.UniqueId = a.Next();
-            entry.Username = username;
-            if (DataBaseCRUD.AddEntry(entry))
-                NotifySubscribedUsers();
-        }
 
         [PrincipalPermission(SecurityAction.Demand, Role = "Supervise")]
         public List<DataBaseEntry> ReadAllEvents()
@@ -137,6 +126,26 @@ namespace Service
             }
         }
 
+        public void LogAction(byte[] message, byte[] signature)
+        {
+            string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+            var clientCert = CertManager.GetCertificateFromStorage(StoreName.TrustedPeople, StoreLocation.LocalMachine, username);
 
+            string decryptedMessage = Crypto3DES.DecryptMessage(message, clientCert.GetPublicKeyString());
+            if (DigitalSignature.Verify(decryptedMessage, signature, clientCert))
+            {
+                DataBaseEntry entry = new DataBaseEntry();
+                entry.SId = "23424";
+                entry.ActionName = decryptedMessage;
+                entry.TimeStamp = DateTime.Now;
+                entry.UniqueId = a.Next();
+                entry.Username = username;
+                if (DataBaseCRUD.AddEntry(entry))
+                    NotifySubscribedUsers();
+            }
+            else
+                return;
+            
+        }
     }
 }
