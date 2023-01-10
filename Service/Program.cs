@@ -41,7 +41,15 @@ namespace Service
 			List<IAuthorizationPolicy> policies = new List<IAuthorizationPolicy>();
 			policies.Add(new CustomAuthorizationPolicy());
 			host.Authorization.ExternalAuthorizationPolicies = policies.AsReadOnly();
-			
+
+			ServiceSecurityAuditBehavior newAudit = new ServiceSecurityAuditBehavior();
+			newAudit.AuditLogLocation = AuditLogLocation.Application;
+			newAudit.ServiceAuthorizationAuditLevel = AuditLevel.SuccessOrFailure;
+
+			host.Description.Behaviors.Remove<ServiceSecurityAuditBehavior>();
+			host.Description.Behaviors.Add(newAudit);
+
+
 
 			try
 			{

@@ -43,6 +43,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Audit.cs" />
+    <Compile Include="AuditEventFile.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AuditEventFile.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AuditEvents.cs" />
     <Compile Include="CertManager.cs" />
     <Compile Include="ClientCertValidator.cs" />
     <Compile Include="CustomAuthorizationManager.cs" />
@@ -59,6 +66,10 @@
     <Compile Include="ServiceCertValidator.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="AuditEventFile.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>AuditEventFile.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="RolesConfigFile.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>RolesConfigFile.Designer.cs</LastGenOutput>
