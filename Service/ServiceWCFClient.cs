@@ -52,11 +52,11 @@ namespace Service
 			this.Close();
 		}
 
-        public bool ModifyEvent(int id, DataBaseEntry entry)
+        public bool ModifyEvent(int id, DataBaseEntry entry, string sId)
         {
 			try
 			{
-				return factory.ModifyEvent(id, entry);
+				return factory.ModifyEvent(id, entry, sId);
 			}
 			catch (Exception e)
 			{

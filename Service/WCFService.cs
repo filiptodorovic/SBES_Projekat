@@ -67,6 +67,11 @@ namespace Service
             binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
             binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
 
+            //getting sID
+            IIdentity identity = Thread.CurrentPrincipal.Identity;
+            WindowsIdentity windowsIdentity = identity as WindowsIdentity;
+            string sId = windowsIdentity.User.ToString();
+
             using (ServiceWCFClient proxy = new ServiceWCFClient(binding, address))
             {
                 DataBaseEntry dbEntry = new DataBaseEntry();
@@ -75,7 +80,7 @@ namespace Service
                 if (action != "")
                     dbEntry.ActionName = action;
                     
-                bool eventModified = proxy.ModifyEvent(id, dbEntry);
+                bool eventModified = proxy.ModifyEvent(id, dbEntry, sId);
                 if(eventModified)
                 {
                     NotifySubscribedUsers();
@@ -124,11 +129,16 @@ namespace Service
             string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
             var clientCert = CertManager.GetCertificateFromStorage(StoreName.TrustedPeople, StoreLocation.LocalMachine, username);
 
+            //getting sID
+            IIdentity identity = Thread.CurrentPrincipal.Identity;
+            WindowsIdentity windowsIdentity = identity as WindowsIdentity;
+            string sId = windowsIdentity.User.ToString();
+
             string decryptedMessage = Crypto3DES.DecryptMessage(message, clientCert.GetPublicKeyString());
             if (DigitalSignature.Verify(decryptedMessage, signature, clientCert))
             {
                 DataBaseEntry entry = new DataBaseEntry();
-                entry.SId = "23424";
+                entry.SId = sId;
                 entry.ActionName = decryptedMessage;
                 entry.TimeStamp = DateTime.Now;
                 entry.UniqueId = a.Next();
