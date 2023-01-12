@@ -21,7 +21,7 @@ namespace Service
         static Dictionary<string, int> subscribedUsers = new Dictionary<string, int>();
         static Random a = new Random();
 
-        private string GetCurrentUsername()
+        private static string GetCurrentUsername()
         {
             CustomPrincipal principal = Thread.CurrentPrincipal as CustomPrincipal;
             string userName = Formatter.ParseName(principal.Identity.Name);
@@ -241,6 +241,7 @@ namespace Service
 
         private static void NotifySubscribedUsers()
         {
+            
             foreach (int userPort in subscribedUsers.Values)
             {
                 NetTcpBinding netTcpBinding = new NetTcpBinding();
@@ -248,7 +249,23 @@ namespace Service
                 using (ServiceSubscribedClients proxySubscribedClients = new ServiceSubscribedClients(netTcpBinding, endpointAddress))
                 {
                     //here we should add event log
-                    proxySubscribedClients.SendNotifications(DataBaseCRUD.ReadAllEntries());
+                    List<DataBaseEntry> entries = DataBaseCRUD.ReadAllEntries();
+                    if(entries == null)
+                    {
+                        try
+                        {
+                            Audit.AccessDBFailure(GetCurrentUsername(), OperationContext.Current.IncomingMessageHeaders.Action, "Cannot read entires from DB");
+                        }
+                        catch(Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+                        }
+                    }
+                    else
+                    {
+                        proxySubscribedClients.SendNotifications(entries);
+                        Audit.AccessDBSuccess(GetCurrentUsername(), OperationContext.Current.IncomingMessageHeaders.Action);
+                    }
                 }
             }
         }
