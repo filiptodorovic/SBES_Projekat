@@ -42,5 +42,19 @@ namespace SecurityManager
                 return winLogonName;
             }
         }
+
+        public static string ParseGroup(string name)
+        {
+            string group = "";
+
+
+            group = name.Substring(name.IndexOf("OU=")).Split(' ')[0];
+            group = group.Substring(group.IndexOf("=") + 1);
+            group = group.Remove(group.Length - 1);
+
+
+            return group;
+
+        }
     }
 }
