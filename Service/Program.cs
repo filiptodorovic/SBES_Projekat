@@ -28,22 +28,24 @@ namespace Service
 			ServiceHost host = new ServiceHost(typeof(WCFService));
 			host.AddServiceEndpoint(typeof(IService), binding, address);
 
+			
 			host.Credentials.ClientCertificate.Authentication.CertificateValidationMode = X509CertificateValidationMode.Custom;
 			host.Credentials.ClientCertificate.Authentication.CustomCertificateValidator = new ServiceCertValidator();
 
 			host.Credentials.ClientCertificate.Authentication.RevocationMode = X509RevocationMode.NoCheck;
 
 			host.Credentials.ServiceCertificate.Certificate = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvCertCN);
+			
+			host.Description.Behaviors.Remove(typeof(ServiceDebugBehavior));
+            host.Description.Behaviors.Add(new ServiceDebugBehavior() { IncludeExceptionDetailInFaults = true });
 
-			/*
-			 * setting Custom Authorization for RBAC model
-			 * 
-			host.Authorization.ServiceAuthorizationManager = new CustomAuthorizationManager();
-			host.Authorization.PrincipalPermissionMode = PrincipalPermissionMode.Custom;
-			List<IAuthorizationPolicy> policies = new List<IAuthorizationPolicy>();
-			policies.Add(new CustomAuthorizationPolicy());
-			host.Authorization.ExternalAuthorizationPolicies = policies.AsReadOnly();
-			*/
+            host.Authorization.ServiceAuthorizationManager = new CustomAuthorizationManager();
+            host.Authorization.PrincipalPermissionMode = PrincipalPermissionMode.Custom;
+
+            List<IAuthorizationPolicy> policies = new List<IAuthorizationPolicy>();
+            policies.Add(new CustomAuthorizationPolicy());
+            host.Authorization.ExternalAuthorizationPolicies = policies.AsReadOnly();
+			
 
 			try
 			{

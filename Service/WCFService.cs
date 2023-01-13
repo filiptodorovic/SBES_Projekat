@@ -4,6 +4,7 @@ using SecurityManager;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Permissions;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.ServiceModel;
@@ -21,6 +22,7 @@ namespace Service
         static Dictionary<string, int> subscribedUsers = new Dictionary<string, int>();
         static Random a = new Random();
 
+        [PrincipalPermission(SecurityAction.Demand, Role = "Modify")]
         public bool DeleteEvent(int id)
         {
             NetTcpBinding binding = new NetTcpBinding();
@@ -42,22 +44,26 @@ namespace Service
         }
 
 
+        [PrincipalPermission(SecurityAction.Demand, Role = "Supervise")]
         public List<DataBaseEntry> ReadAllEvents()
         {
             return DataBaseCRUD.ReadAllEntries();
         }
 
+        [PrincipalPermission(SecurityAction.Demand, Role = "Read")]
         public List<DataBaseEntry> ReadMyEvents()
         {
             string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
             return DataBaseCRUD.ReadAllEntries().Where(x => x.Username == username).ToList();
         }
 
+        [PrincipalPermission(SecurityAction.Demand, Role = "Supervise")]
         public void Supervise()
         {
             throw new NotImplementedException();
         }
 
+        [PrincipalPermission(SecurityAction.Demand, Role = "Modify")]
         public bool UpdateEvent(int id, string action, DateTime newTimestamp)
         {
             NetTcpBinding binding = new NetTcpBinding();
@@ -90,6 +96,7 @@ namespace Service
             }
         }
 
+        [PrincipalPermission(SecurityAction.Demand, Role = "Subscribe")]
         public int Subscribe()
         {
             int port = 8000;

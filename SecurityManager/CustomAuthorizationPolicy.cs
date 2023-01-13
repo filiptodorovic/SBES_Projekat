@@ -11,33 +11,41 @@ namespace SecurityManager
 {
     public class CustomAuthorizationPolicy : IAuthorizationPolicy
     {
+        private string id;
+
         public CustomAuthorizationPolicy()
         {
-            Id = Guid.NewGuid().ToString();
-        }
-        public ClaimSet Issuer
-        {
-            get { return ClaimSet.System;  }
+            this.id = Guid.NewGuid().ToString();
         }
 
-        public string Id { get; }
+        public string Id
+        {
+            get { return this.id; }
+        }
+
+        public ClaimSet Issuer
+        {
+            get { return ClaimSet.System; }
+        }
 
         public bool Evaluate(EvaluationContext evaluationContext, ref object state)
         {
-            if(!evaluationContext.Properties.TryGetValue("Identites", out object list))
+            object list;
+
+            if (!evaluationContext.Properties.TryGetValue("Identities", out list))
             {
                 return false;
             }
 
             IList<IIdentity> identities = list as IList<IIdentity>;
-            if(list == null || identities.Count <= 0)
+            if (list == null || identities.Count <= 0)
             {
                 return false;
             }
 
-            evaluationContext.Properties["Principal"] = new CustomPrincipal((WindowsIdentity)identities[0]);
+            GenericIdentity identity = identities[0] as GenericIdentity;
+            evaluationContext.Properties["Principal"] = new CustomPrincipal(identity);
             return true;
-
         }
     }
 }
