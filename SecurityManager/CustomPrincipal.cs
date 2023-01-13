@@ -9,31 +9,31 @@ namespace SecurityManager
 {
     public class CustomPrincipal : IPrincipal
     {
-        WindowsIdentity identity = null;
-        public CustomPrincipal(WindowsIdentity windowsIdentity)
+        private GenericIdentity identity = null;
+        private string group = string.Empty;
+
+        public CustomPrincipal(GenericIdentity genericIdentity)
         {
-            identity = windowsIdentity;
+            this.identity = genericIdentity;
+
+            group = Formatter.ParseGroup(identity.Name);
         }
 
         public IIdentity Identity
         {
-            get { return identity; }
+            get { return this.identity; }
         }
 
         public bool IsInRole(string permission)
         {
-            foreach(IdentityReference group in this.identity.Groups)
+            string[] permissions;
+
+            if (RolesConfig.GetPermissions(group, out permissions))
             {
-                SecurityIdentifier sid = (SecurityIdentifier)group.Translate(typeof(SecurityIdentifier));
-                var name = sid.Translate(typeof(NTAccount));
-                string groupName = Formatter.ParseName(name.ToString());
-                string[] permissions;
-                if(RolesConfig.GetPermissions(groupName, out permissions))
+                foreach (string permision in permissions)
                 {
-                    if (permissions.Contains(permission))
-                    {
+                    if (permision.Equals(permission))
                         return true;
-                    }
                 }
             }
             return false;
