@@ -12,13 +12,9 @@ namespace SecurityManager
     {
         protected override bool CheckAccessCore(OperationContext operationContext)
         {
-            /*
-             * Maybe we will need this method
             CustomPrincipal principal = operationContext.ServiceSecurityContext.
-                   AuthorizationContext.Properties["Principal"] as CustomPrincipal;
+                AuthorizationContext.Properties["Principal"] as CustomPrincipal;
             return principal.IsInRole("Read");
-            */
-            return true;
 
         }
     }
