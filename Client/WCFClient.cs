@@ -95,7 +95,7 @@ namespace Client
 			try
 			{
 				byte[] signature = null;
-				byte[] encodedMyEvents = factory.ReadMyEvents(out signature);
+				byte[] encodedMyEvents = factory.ReadAllEvents(out signature);
 
 				var serviceCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvCertCN);
 
