@@ -36,16 +36,6 @@ namespace Service
 
 			host.Credentials.ServiceCertificate.Certificate = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvCertCN);
 			
-			host.Description.Behaviors.Remove(typeof(ServiceDebugBehavior));
-            host.Description.Behaviors.Add(new ServiceDebugBehavior() { IncludeExceptionDetailInFaults = true });
-
-            host.Authorization.ServiceAuthorizationManager = new CustomAuthorizationManager();
-            host.Authorization.PrincipalPermissionMode = PrincipalPermissionMode.Custom;
-
-            List<IAuthorizationPolicy> policies = new List<IAuthorizationPolicy>();
-            policies.Add(new CustomAuthorizationPolicy());
-            host.Authorization.ExternalAuthorizationPolicies = policies.AsReadOnly();
-			
 
 			try
 			{

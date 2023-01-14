@@ -17,12 +17,11 @@ namespace Service
     public class WCFService : IService
     {
 
-
         static int subscriptionCounter = 0;
         static Dictionary<string, int> subscribedUsers = new Dictionary<string, int>();
         static Random a = new Random();
 
-        [PrincipalPermission(SecurityAction.Demand, Role = "Modify")]
+      
         public bool DeleteEvent(int id)
         {
             NetTcpBinding binding = new NetTcpBinding();
@@ -44,26 +43,31 @@ namespace Service
         }
 
 
-        [PrincipalPermission(SecurityAction.Demand, Role = "Supervise")]
         public List<DataBaseEntry> ReadAllEvents()
         {
-            return DataBaseCRUD.ReadAllEntries();
+            string group = Formatter.ParseGroup(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+            if (group.Equals("Supervisor"))
+            {
+                return DataBaseCRUD.ReadAllEntries();
+            }
+            else
+            {
+                string message = String.Format("Access is denied. User has tried to call Supervise(ReadAllEvents) method" +
+                   "For this method need to be member of group Supervisor.");
+                throw new FaultException<SecurityException>(new SecurityException(message));
+            }
+           
         }
 
-        [PrincipalPermission(SecurityAction.Demand, Role = "Read")]
+
         public List<DataBaseEntry> ReadMyEvents()
         {
+            
             string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+       
             return DataBaseCRUD.ReadAllEntries().Where(x => x.Username == username).ToList();
         }
 
-        [PrincipalPermission(SecurityAction.Demand, Role = "Supervise")]
-        public void Supervise()
-        {
-            throw new NotImplementedException();
-        }
-
-        [PrincipalPermission(SecurityAction.Demand, Role = "Modify")]
         public bool UpdateEvent(int id, string action, DateTime newTimestamp)
         {
             NetTcpBinding binding = new NetTcpBinding();
@@ -96,7 +100,7 @@ namespace Service
             }
         }
 
-        [PrincipalPermission(SecurityAction.Demand, Role = "Subscribe")]
+
         public int Subscribe()
         {
             int port = 8000;
@@ -134,7 +138,7 @@ namespace Service
         public void LogAction(byte[] message, byte[] signature, string sid)
         {
             string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
-            var clientCert = CertManager.GetCertificateFromStorage(StoreName.TrustedPeople, StoreLocation.LocalMachine, username);
+            var clientCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, username);
 
             //getting sID
             /*IIdentity identity = Thread.CurrentPrincipal.Identity;

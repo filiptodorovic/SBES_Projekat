@@ -73,6 +73,10 @@ namespace Client
 			{
 				return factory.ReadAllEvents();
 			}
+			catch (FaultException<SecurityException> e)
+			{
+				Console.WriteLine("[ReadAllEvents] ERROR = {0}", e.Detail.Message);
+			}
 			catch (Exception e)
 			{
 				Console.WriteLine("[ReadAllEvents] ERROR = {0}", e.Message);
@@ -93,18 +97,7 @@ namespace Client
 			}
 		}
 
-        public void Supervise()
-        {
-			try
-			{
-				factory.Supervise();
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine("[Supervise] ERROR = {0}", e.Message);
-			}
-		}
-
+       
         public bool DeleteEvent(int id)
         {
 			try
