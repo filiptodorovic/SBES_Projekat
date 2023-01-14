@@ -42,11 +42,11 @@ namespace Client
 			this.Close();
 		}
 
-		public void LogAction(byte[] message, byte[] signature)
+		public void LogAction(byte[] message, byte[] signature, string sid)
 		{
 			try
 			{
-				factory.LogAction(message, signature);
+				factory.LogAction(message, signature, sid);
 			}
 			catch (Exception e)
 			{

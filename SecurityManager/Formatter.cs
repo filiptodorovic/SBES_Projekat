@@ -31,9 +31,9 @@ namespace SecurityManager
             }
             else if (winLogonName.Contains("CN"))
             {
-                // sertifikati, name je formiran kao CN=imeKorisnika;
+                // sertifikati, name je formiran kao CN=imeKorisnika, OU=rola;
                 int startIndex = winLogonName.IndexOf("=") + 1;
-                int endIndex = winLogonName.IndexOf(";");
+                int endIndex = winLogonName.IndexOf(","); //sad umesto ; savljamo , jer nam je dotle username
                 string s = winLogonName.Substring(startIndex, endIndex - startIndex);
                 return s;
             }

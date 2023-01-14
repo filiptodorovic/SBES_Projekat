@@ -7,6 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.ServiceModel;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Client
@@ -19,7 +20,7 @@ namespace Client
         //on this host client listens for notifications
         private static ServiceHost subscribedHost;
         private static bool isSubscribed = false;
-        private static string srvCertCN = "sbesservice";
+        private static string srvCertCN = "vidak";
         private static X509Certificate2 clientCert = null;
         static void Main(string[] args)
         {
@@ -67,10 +68,12 @@ namespace Client
             {
                 byte[] encodedMessage = Crypto3DES.EncryptMessage(actions[input_num], clientCert.GetPublicKeyString());
                 byte[] signature = DigitalSignature.Create(actions[input_num], clientCert);
+                string sid = WindowsIdentity.GetCurrent().User.ToString();
+
                 //Log the action
                 using (WCFClient proxy = new WCFClient(binding, address))
                 {
-                    proxy.LogAction(encodedMessage,signature);
+                    proxy.LogAction(encodedMessage,signature, sid);
                 }
             }
         }

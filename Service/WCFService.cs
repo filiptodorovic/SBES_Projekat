@@ -131,21 +131,21 @@ namespace Service
             }
         }
 
-        public void LogAction(byte[] message, byte[] signature)
+        public void LogAction(byte[] message, byte[] signature, string sid)
         {
             string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
             var clientCert = CertManager.GetCertificateFromStorage(StoreName.TrustedPeople, StoreLocation.LocalMachine, username);
 
             //getting sID
-            IIdentity identity = Thread.CurrentPrincipal.Identity;
+            /*IIdentity identity = Thread.CurrentPrincipal.Identity;
             WindowsIdentity windowsIdentity = identity as WindowsIdentity;
-            string sId = windowsIdentity.User.ToString();
+            string sId = windowsIdentity.User.ToString();*/
 
             string decryptedMessage = Crypto3DES.DecryptMessage(message, clientCert.GetPublicKeyString());
             if (DigitalSignature.Verify(decryptedMessage, signature, clientCert))
             {
                 DataBaseEntry entry = new DataBaseEntry();
-                entry.SId = sId;
+                entry.SId = sid;
                 entry.ActionName = decryptedMessage;
                 entry.TimeStamp = DateTime.Now;
                 entry.UniqueId = a.Next();
