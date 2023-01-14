@@ -66,14 +66,12 @@ namespace Client
             int input_num = GetChosenAction(actions);
             if (input_num != -1)
             {
-                byte[] encodedMessage = Crypto3DES.EncryptMessage(actions[input_num], clientCert.GetPublicKeyString());
-                byte[] signature = DigitalSignature.Create(actions[input_num], clientCert);
                 string sid = WindowsIdentity.GetCurrent().User.ToString();
 
                 //Log the action
                 using (WCFClient proxy = new WCFClient(binding, address))
                 {
-                    proxy.LogAction(encodedMessage,signature, sid);
+                    proxy.LogAction(actions[input_num],sid);
                 }
             }
         }

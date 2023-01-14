@@ -11,6 +11,8 @@ using System.ServiceModel;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 
 namespace Service
 {
@@ -20,40 +22,50 @@ namespace Service
         static int subscriptionCounter = 0;
         static Dictionary<string, int> subscribedUsers = new Dictionary<string, int>();
         static Random a = new Random();
+        static string srvcrtCN = Formatter.ParseName(WindowsIdentity.GetCurrent().Name);
 
-      
-        public bool DeleteEvent(int id)
+
+        public bool DeleteEvent(byte[] id, byte[] signature)
         {
             string group = Formatter.ParseGroup(ServiceSecurityContext.Current.PrimaryIdentity.Name);
             string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
             if (group.Equals("Modifier"))
             {
-                NetTcpBinding binding = new NetTcpBinding();
-                EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:7000/ILoadBalancer"));
+                var clientCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, username);
 
-                binding.Security.Mode = SecurityMode.Transport;
-                binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
-                binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
+                byte[] decryptedMessage = Crypto3DES.DecryptMessage(id, clientCert.GetPublicKeyString());
 
-                try
+                if (DigitalSignature.Verify(decryptedMessage, signature, clientCert))
                 {
-                    Audit.AuthorizationSuccess(username,
-                        OperationContext.Current.IncomingMessageHeaders.Action);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
+                    int idUser = XmlIO.DeSerializeObject<int>(decryptedMessage);
 
-                using (ServiceWCFClient proxy = new ServiceWCFClient(binding, address))
-                {
-                    bool eventDeleted = false;
-                    eventDeleted = proxy.DeleteEvent(id);
-                    if (eventDeleted)
+                    NetTcpBinding binding = new NetTcpBinding();
+                    EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:7000/ILoadBalancer"));
+
+                    binding.Security.Mode = SecurityMode.Transport;
+                    binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
+                    binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
+
+                    try
                     {
-                        NotifySubscribedUsers();
+                        Audit.AuthorizationSuccess(username,
+                            OperationContext.Current.IncomingMessageHeaders.Action);
                     }
-                    return eventDeleted;
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+
+                    using (ServiceWCFClient proxy = new ServiceWCFClient(binding, address))
+                    {
+                        bool eventDeleted = false;
+                        eventDeleted = proxy.DeleteEvent(idUser);
+                        if (eventDeleted)
+                        {
+                            NotifySubscribedUsers();
+                        }
+                        return eventDeleted;
+                    }
                 }
             }
             else
@@ -71,12 +83,16 @@ namespace Service
                    " For this method need to be member of group Modifier.";
                 SecurityException securityException = new SecurityException { Message = message };
                 throw new FaultException<SecurityException>(securityException, message);
+
+
+
+
             }
-            
+            return false;
         }
 
 
-        public List<DataBaseEntry> ReadAllEvents()
+        public byte[] ReadAllEvents(out byte[] signature)
         {
             string group = Formatter.ParseGroup(ServiceSecurityContext.Current.PrimaryIdentity.Name);
             string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
@@ -91,7 +107,14 @@ namespace Service
                 {
                     Console.WriteLine(e.Message);
                 }
-                return DataBaseCRUD.ReadAllEntries();
+                var srvCrt = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvcrtCN);
+                List<DataBaseEntry> retList = DataBaseCRUD.ReadAllEntries().ToList();
+
+                byte[] byteList = XmlIO.SerializeObject(retList);
+
+                byte[] encodedMessage = Crypto3DES.EncryptMessage(byteList, srvCrt.GetPublicKeyString());
+                signature = DigitalSignature.Create(byteList, srvCrt);
+                return encodedMessage;
             }
             else
             {
@@ -109,11 +132,15 @@ namespace Service
                 SecurityException securityException = new SecurityException { Message = message };
                 throw new FaultException<SecurityException>(securityException, message);
             }
+
+
         }
 
 
-        public List<DataBaseEntry> ReadMyEvents()
+        public byte[] ReadMyEvents(out byte[] signature)
         {
+            var srvCrt = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvcrtCN);
+
             string group = Formatter.ParseGroup(ServiceSecurityContext.Current.PrimaryIdentity.Name);
             string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
 
@@ -128,7 +155,13 @@ namespace Service
                 {
                     Console.WriteLine(e.Message);
                 }
-                return DataBaseCRUD.ReadAllEntries().Where(x => x.Username == username).ToList();
+                List<DataBaseEntry> retList = DataBaseCRUD.ReadAllEntries().Where(x => x.Username == username).ToList();
+
+                byte[] byteList = XmlIO.SerializeObject(retList);
+
+                byte[] encodedMessage = Crypto3DES.EncryptMessage(byteList, srvCrt.GetPublicKeyString());
+                signature = DigitalSignature.Create(byteList, srvCrt);
+                return encodedMessage;
             }
             else
             {
@@ -147,28 +180,42 @@ namespace Service
                 throw new FaultException<SecurityException>(securityException, message);
             }
         }
+    
 
-        public bool UpdateEvent(int id, string action, DateTime newTimestamp, string sid)
+        public bool UpdateEvent(byte[] updatedData, byte[] signature)
         {
-            string group = Formatter.ParseGroup(ServiceSecurityContext.Current.PrimaryIdentity.Name);
-            string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
-            if (group.Equals("Modifier")) { 
-                NetTcpBinding binding = new NetTcpBinding();
-                EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:7000/ILoadBalancer"));
+        string group = Formatter.ParseGroup(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+        string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+        var clientCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, username);
 
-                binding.Security.Mode = SecurityMode.Transport;
-                binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
-                binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
+        if (group.Equals("Modifier")) {
+            NetTcpBinding binding = new NetTcpBinding();
+            EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:7000/ILoadBalancer"));
 
-                try
-                {
-                    Audit.AuthorizationSuccess(username,
-                        OperationContext.Current.IncomingMessageHeaders.Action);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
+            binding.Security.Mode = SecurityMode.Transport;
+            binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
+            binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
+
+            try
+            {
+                Audit.AuthorizationSuccess(username,
+                    OperationContext.Current.IncomingMessageHeaders.Action);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+            UpdateData dataUpdate = null;
+
+            byte[] decryptedMessage = Crypto3DES.DecryptMessage(updatedData, clientCert.GetPublicKeyString());
+            if (DigitalSignature.Verify(decryptedMessage, signature, clientCert))
+            {
+                dataUpdate = XmlIO.DeSerializeObject<UpdateData>(decryptedMessage);
+                var newTimestamp = dataUpdate.Timestamp;
+                var action = dataUpdate.Action;
+                var id = dataUpdate.Id;
+                var sId = dataUpdate.Sid;
 
                 using (ServiceWCFClient proxy = new ServiceWCFClient(binding, address))
                 {
@@ -178,7 +225,7 @@ namespace Service
                     if (action != "")
                         dbEntry.ActionName = action;
 
-                    bool eventModified = proxy.ModifyEvent(id, dbEntry, sid);
+                    bool eventModified = proxy.ModifyEvent(id, dbEntry, sId);
                     if (eventModified)
                     {
                         NotifySubscribedUsers();
@@ -186,26 +233,28 @@ namespace Service
                     return eventModified;
                 }
             }
-            else
+        }
+        else
+        {
+            try
             {
-                try
-                {
-                    Audit.AuthorizationFailed(username,
-                        OperationContext.Current.IncomingMessageHeaders.Action, "UpdateEvent method need Modifier permission.");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
-                string message = "Access is denied. User has tried to call UpdateEvent method." +
-                                    " For this method need to be member of group Modifier.";
-                SecurityException securityException = new SecurityException { Message = message };
-                throw new FaultException<SecurityException>(securityException, message);
+                Audit.AuthorizationFailed(username,
+                    OperationContext.Current.IncomingMessageHeaders.Action, "UpdateEvent method need Modifier permission.");
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            string message = "Access is denied. User has tried to call UpdateEvent method." +
+                                " For this method need to be member of group Modifier.";
+            SecurityException securityException = new SecurityException { Message = message };
+            throw new FaultException<SecurityException>(securityException, message);
+        }
+        return false;
+
         }
 
-
-        public int Subscribe()
+        public byte[] Subscribe(out byte[] signature)
         {
             string group = Formatter.ParseGroup(ServiceSecurityContext.Current.PrimaryIdentity.Name);
             string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
@@ -230,8 +279,13 @@ namespace Service
 
                 subscriptionCounter++;
 
+                var clientCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvcrtCN);
+
+                byte[] encodedMessage = Crypto3DES.EncryptMessage(XmlIO.SerializeObject(subscribedUsers[username]), clientCert.GetPublicKeyString());
+                signature = DigitalSignature.Create(XmlIO.SerializeObject(subscribedUsers[username]), clientCert);
+
                 //return the port on which  subscribed client will listen for notifications
-                return subscribedUsers[username];
+                return encodedMessage;
             }
             else
             {
@@ -251,6 +305,7 @@ namespace Service
             }
         }
 
+
         private static void NotifySubscribedUsers()
         {
             foreach (int userPort in subscribedUsers.Values)
@@ -264,10 +319,15 @@ namespace Service
             }
         }
 
-        public void LogAction(byte[] message, byte[] signature, string sid)
+        public void LogAction(byte[] actionSid, byte[] signature)
         {
             string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
             var clientCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, username);
+
+            //getting sID
+            /*IIdentity identity = Thread.CurrentPrincipal.Identity;
+            WindowsIdentity windowsIdentity = identity as WindowsIdentity;
+            string sId = windowsIdentity.User.ToString();*/
 
             try
             {
@@ -278,12 +338,16 @@ namespace Service
             {
                 Console.WriteLine(e.Message);
             }
-            string decryptedMessage = Crypto3DES.DecryptMessage(message, clientCert.GetPublicKeyString());
+
+            byte[] decryptedMessage = Crypto3DES.DecryptMessage(actionSid, clientCert.GetPublicKeyString());
+
             if (DigitalSignature.Verify(decryptedMessage, signature, clientCert))
             {
+                var obj = XmlIO.DeSerializeObject<ActionAndSid>(decryptedMessage);
+
                 DataBaseEntry entry = new DataBaseEntry();
-                entry.SId = sid;
-                entry.ActionName = decryptedMessage;
+                entry.SId = obj.Sid;
+                entry.ActionName = obj.Aciton;
                 entry.TimeStamp = DateTime.Now;
                 entry.UniqueId = a.Next();
                 entry.Username = username;
@@ -294,5 +358,6 @@ namespace Service
                 return;
             
         }
+        
     }
 }
