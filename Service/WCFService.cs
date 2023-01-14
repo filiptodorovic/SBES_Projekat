@@ -208,21 +208,21 @@ namespace Service
         public int Subscribe()
         {
             string group = Formatter.ParseGroup(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+            string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
             if (group.Equals("Subscriber"))
             {
                 int port = 8000;
 
-                //get the clients username
-                string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+                try
+                {
+                    Audit.AuthorizationSuccess(username,
+                        OperationContext.Current.IncomingMessageHeaders.Action);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
 
-
-                /*IIdentity identity = Thread.CurrentPrincipal.Identity;
-                WindowsIdentity windowsIdentity = identity as WindowsIdentity;
-                string username = windowsIdentity.Name;*/
-
-
-
-                //update subscribeUsers evidency
                 if (subscribedUsers.ContainsKey(username))
                     subscribedUsers[username] = port + subscriptionCounter;
                 else
@@ -235,6 +235,15 @@ namespace Service
             }
             else
             {
+                try
+                {
+                    Audit.AuthorizationFailed(username,
+                        OperationContext.Current.IncomingMessageHeaders.Action, "Subscribe method need Subscribe permission.");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
                 string message = "Access is denied. User has tried to call Subscribe method." +
                                     " For this method need to be member of group Subscriber.";
                 SecurityException securityException = new SecurityException { Message = message };
@@ -260,10 +269,6 @@ namespace Service
             string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
             var clientCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, username);
 
-            //getting sID
-            /*IIdentity identity = Thread.CurrentPrincipal.Identity;
-            WindowsIdentity windowsIdentity = identity as WindowsIdentity;
-            string sId = windowsIdentity.User.ToString();*/
             try
             {
                 Audit.AuthorizationSuccess(username,
