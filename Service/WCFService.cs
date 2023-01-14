@@ -47,7 +47,8 @@ namespace Service
 
                 using (ServiceWCFClient proxy = new ServiceWCFClient(binding, address))
                 {
-                    bool eventDeleted = proxy.DeleteEvent(id);
+                    bool eventDeleted = false;
+                    eventDeleted = proxy.DeleteEvent(id);
                     if (eventDeleted)
                     {
                         NotifySubscribedUsers();
@@ -206,23 +207,39 @@ namespace Service
 
         public int Subscribe()
         {
-            int port = 8000;
+            string group = Formatter.ParseGroup(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+            if (group.Equals("Subscriber"))
+            {
+                int port = 8000;
 
-            //get the clients username
-            IIdentity identity = Thread.CurrentPrincipal.Identity;
-            WindowsIdentity windowsIdentity = identity as WindowsIdentity;
-            string username = windowsIdentity.Name;
+                //get the clients username
+                string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
 
-            //update subscribeUsers evidency
-            if (subscribedUsers.ContainsKey(username))
-                subscribedUsers[username] = port + subscriptionCounter;
+
+                /*IIdentity identity = Thread.CurrentPrincipal.Identity;
+                WindowsIdentity windowsIdentity = identity as WindowsIdentity;
+                string username = windowsIdentity.Name;*/
+
+
+
+                //update subscribeUsers evidency
+                if (subscribedUsers.ContainsKey(username))
+                    subscribedUsers[username] = port + subscriptionCounter;
+                else
+                    subscribedUsers.Add(username, port + subscriptionCounter);
+
+                subscriptionCounter++;
+
+                //return the port on which  subscribed client will listen for notifications
+                return subscribedUsers[username];
+            }
             else
-                subscribedUsers.Add(username, port + subscriptionCounter);
-
-            subscriptionCounter++;
-
-            //return the port on which  subscribed client will listen for notifications
-            return subscribedUsers[username];
+            {
+                string message = "Access is denied. User has tried to call Subscribe method." +
+                                    " For this method need to be member of group Subscriber.";
+                SecurityException securityException = new SecurityException { Message = message };
+                throw new FaultException<SecurityException>(securityException, message);
+            }
         }
 
         private static void NotifySubscribedUsers()
