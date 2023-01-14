@@ -60,6 +60,10 @@ namespace Client
 			{
 				return factory.ReadMyEvents();
 			}
+			catch (FaultException<SecurityException> e)
+			{
+				Console.WriteLine("[ReadMyEvents] ERROR = {0}", e.Detail.Message);
+			}
 			catch (Exception e)
 			{
 				Console.WriteLine("[ReadMyEvents] ERROR = {0}", e.Message);
@@ -84,17 +88,21 @@ namespace Client
 			return null;
 		}
 
-        public bool UpdateEvent(int id, string action,DateTime newTime)
+        public bool UpdateEvent(int id, string action, DateTime newTime, string sid)
         {
 			try
 			{
-				return factory.UpdateEvent(id, action, newTime);
+				return factory.UpdateEvent(id, action, newTime, sid);
+			}
+			catch (FaultException<SecurityException> e)
+			{
+				Console.WriteLine("[ReadAllEvents] ERROR = {0}", e.Detail.Message);
 			}
 			catch (Exception e)
 			{
 				Console.WriteLine("[UpdateEvent] ERROR = {0}", e.Message);
-				return false;
 			}
+			return false;
 		}
 
        

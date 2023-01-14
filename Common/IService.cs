@@ -18,13 +18,14 @@ namespace Common
 		[FaultContract(typeof(SecurityException))]
 		List<DataBaseEntry> ReadMyEvents();
 
+		
 		[OperationContract]
 		[FaultContract(typeof(SecurityException))]
 		List<DataBaseEntry> ReadAllEvents();
 
 		[OperationContract]
 		[FaultContract(typeof(SecurityException))]
-		bool UpdateEvent(int id, string action, DateTime newTimestamp);
+		bool UpdateEvent(int id, string action, DateTime newTimestamp, string sid);
 
 		[OperationContract]
 		[FaultContract(typeof(SecurityException))]

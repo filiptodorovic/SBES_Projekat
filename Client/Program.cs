@@ -20,7 +20,7 @@ namespace Client
         //on this host client listens for notifications
         private static ServiceHost subscribedHost;
         private static bool isSubscribed = false;
-        private static string srvCertCN = "vidak";
+        private static string srvCertCN = "sbesservice";
         private static X509Certificate2 clientCert = null;
         static void Main(string[] args)
         {
@@ -101,30 +101,38 @@ namespace Client
                     {
                         case "1":
                             var events = proxy.ReadMyEvents();
-                            Console.WriteLine("My events: ");
-                            foreach(var e in events){
-                                Console.WriteLine(e);
+                            if (events != null)
+                            {
+                                Console.WriteLine("My events: ");
+                                foreach (var e in events)
+                                {
+                                    Console.WriteLine(e);
+                                }
                             }
                             break;
                         case "2":
                             var allevents = proxy.ReadAllEvents();
-                            Console.WriteLine("All events: ");
-                            foreach (var e in allevents)
+                            if (allevents != null)
                             {
-                                Console.WriteLine(e);
+                                Console.WriteLine("All events: ");
+                                foreach (var e in allevents)
+                                {
+                                    Console.WriteLine(e);
+                                }
                             }
                             break;
                         case "3":
                             Console.WriteLine("Enter ID of the event you want to MODIFY to current timestamp");
                             inp = Console.ReadLine();
                             input_num = Int32.Parse(inp);
+                            string sid = WindowsIdentity.GetCurrent().User.ToString();
                             Console.WriteLine("Enter a different action('q' if you don't want to change it):");
                             List<string> actions = XmlIO.DeSerializeObject<List<string>>("..\\..\\resourceFile.xml");
                             int action = GetChosenAction(actions);
                             string new_action = "";
                             if (action != -1)
                                 new_action = actions[action];
-                            if (proxy.UpdateEvent(input_num, new_action, DateTime.Now)) {
+                            if (proxy.UpdateEvent(input_num, new_action, DateTime.Now, sid)) {
                                 Console.WriteLine("Success");
                             }
                             else {
