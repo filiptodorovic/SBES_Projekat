@@ -25,6 +25,7 @@ namespace Service
         public bool DeleteEvent(int id)
         {
             string group = Formatter.ParseGroup(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+            string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
             if (group.Equals("Modifier"))
             {
                 NetTcpBinding binding = new NetTcpBinding();
@@ -33,6 +34,16 @@ namespace Service
                 binding.Security.Mode = SecurityMode.Transport;
                 binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
                 binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
+
+                try
+                {
+                    Audit.AuthorizationSuccess(username,
+                        OperationContext.Current.IncomingMessageHeaders.Action);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
 
                 using (ServiceWCFClient proxy = new ServiceWCFClient(binding, address))
                 {
@@ -46,6 +57,15 @@ namespace Service
             }
             else
             {
+                try
+                {
+                    Audit.AuthorizationFailed(username,
+                        OperationContext.Current.IncomingMessageHeaders.Action, "DeleteEvent method need Modifier permission.");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
                 string message = "Access is denied. User has tried to call DeleteEvents method." +
                    " For this method need to be member of group Modifier.";
                 SecurityException securityException = new SecurityException { Message = message };
