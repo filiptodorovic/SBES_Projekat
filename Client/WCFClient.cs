@@ -128,7 +128,7 @@ namespace Client
 			try
 			{
 				var clientCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, cltCertCN);
-				UpdateData ud = new UpdateData(id, newTime, action);
+				UpdateData ud = new UpdateData(id, newTime, action,sid);
 
 				byte[] encodedMessage = Crypto3DES.EncryptMessage(XmlIO.SerializeObject(ud), clientCert.GetPublicKeyString());
 				byte[] signature = DigitalSignature.Create(XmlIO.SerializeObject(ud), clientCert);
