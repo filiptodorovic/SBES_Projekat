@@ -33,5 +33,12 @@
     "Username": "filip",
     "TimeStamp": "2023-01-14T10:29:32.3035731+01:00",
     "ActionName": "Install program"
+  },
+  {
+    "UniqueId": 762744976,
+    "SId": "S-1-5-21-801516180-583585588-1843297041-1032",
+    "Username": "jelena",
+    "TimeStamp": "2023-01-14T17:04:12.3421001+01:00",
+    "ActionName": "Open a file"
   }
 ]
