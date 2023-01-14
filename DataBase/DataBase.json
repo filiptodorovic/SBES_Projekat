@@ -3,8 +3,8 @@
     "UniqueId": 469587750,
     "SId": "S-1-5-21-801516180-583585588-1843297041-1032",
     "Username": "jelena",
-    "TimeStamp": "2023-01-14T19:22:16.4946682+01:00",
-    "ActionName": "Install program"
+    "TimeStamp": "2023-01-14T21:10:02.0258931+01:00",
+    "ActionName": "Play a game"
   },
   {
     "UniqueId": 554811550,
@@ -53,20 +53,6 @@
     "SId": "S-1-5-21-801516180-583585588-1843297041-1026",
     "Username": "filip",
     "TimeStamp": "2023-01-14T19:23:51.2657756+01:00",
-    "ActionName": "Play a game"
-  },
-  {
-    "UniqueId": 1518093030,
-    "SId": "S-1-5-21-801516180-583585588-1843297041-1032",
-    "Username": "jelena",
-    "TimeStamp": "2023-01-14T19:25:54.7073843+01:00",
-    "ActionName": "Install program"
-  },
-  {
-    "UniqueId": 1331440513,
-    "SId": "S-1-5-21-801516180-583585588-1843297041-1032",
-    "Username": "jelena",
-    "TimeStamp": "2023-01-14T19:26:10.0704037+01:00",
     "ActionName": "Play a game"
   }
 ]
