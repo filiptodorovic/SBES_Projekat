@@ -96,7 +96,7 @@ namespace Client
 			}
 			catch (FaultException<SecurityException> e)
 			{
-				Console.WriteLine("[ReadAllEvents] ERROR = {0}", e.Detail.Message);
+				Console.WriteLine("[UpdateEvent] ERROR = {0}", e.Detail.Message);
 			}
 			catch (Exception e)
 			{
@@ -112,11 +112,15 @@ namespace Client
 			{
 				return factory.DeleteEvent(id);
 			}
+			catch (FaultException<SecurityException> e)
+			{
+				Console.WriteLine("[DeleteEvent] ERROR = {0}", e.Detail.Message);
+			}
 			catch (Exception e)
 			{
 				Console.WriteLine("[DeleteEvent] ERROR = {0}", e.Message);
-				return false;
 			}
+			return false;
 		}
 
 		public int Subscribe()
