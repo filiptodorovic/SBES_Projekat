@@ -217,6 +217,10 @@ namespace Service
                 var id = dataUpdate.Id;
                 var sId = dataUpdate.Sid;
 
+                DataBaseEntry entry = DataBaseCRUD.ReadAllEntries().Where(x => x.UniqueId == id).FirstOrDefault();
+                if (!entry.SId.Equals(sId))
+                    return false;
+
                 using (ServiceWCFClient proxy = new ServiceWCFClient(binding, address))
                 {
                     DataBaseEntry dbEntry = new DataBaseEntry();
