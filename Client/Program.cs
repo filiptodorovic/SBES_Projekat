@@ -20,7 +20,7 @@ namespace Client
         //on this host client listens for notifications
         private static ServiceHost subscribedHost;
         private static bool isSubscribed = false;
-        private static string srvCertCN = "vidak";
+        private static string srvCertCN = "sbesservice";
         private static X509Certificate2 clientCert = null;
         static void Main(string[] args)
         {
