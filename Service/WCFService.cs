@@ -52,9 +52,10 @@ namespace Service
             }
             else
             {
-                string message = String.Format("Access is denied. User has tried to call Supervise(ReadAllEvents) method" +
-                   "For this method need to be member of group Supervisor.");
-                throw new FaultException<SecurityException>(new SecurityException(message));
+                string message = "Access is denied. User has tried to call ReadAllEvents method." +
+                    " For this method need to be member of group Supervisor.";
+                SecurityException securityException = new SecurityException { Message = message };
+                throw new FaultException<SecurityException>(securityException, message);
             }
            
         }
@@ -62,41 +63,60 @@ namespace Service
 
         public List<DataBaseEntry> ReadMyEvents()
         {
-            
-            string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
-       
-            return DataBaseCRUD.ReadAllEntries().Where(x => x.Username == username).ToList();
+            string group = Formatter.ParseGroup(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+
+            if (group.Equals("Reader"))
+            {
+                string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+                return DataBaseCRUD.ReadAllEntries().Where(x => x.Username == username).ToList();
+            }
+            else
+            {
+                string message = "Access is denied. User has tried to call ReadMyEvents method." +
+                                   " For this method need to be member of group Reader.";
+                SecurityException securityException = new SecurityException { Message = message };
+                throw new FaultException<SecurityException>(securityException, message);
+            }
         }
 
-        public bool UpdateEvent(int id, string action, DateTime newTimestamp)
+        public bool UpdateEvent(int id, string action, DateTime newTimestamp, string sid)
         {
-            NetTcpBinding binding = new NetTcpBinding();
-            EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:7000/ILoadBalancer"));
+            string group = Formatter.ParseGroup(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+            if (group.Equals("Modifier")) { 
+                NetTcpBinding binding = new NetTcpBinding();
+                EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:7000/ILoadBalancer"));
 
-            binding.Security.Mode = SecurityMode.Transport;
-            binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
-            binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
+                binding.Security.Mode = SecurityMode.Transport;
+                binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
+                binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
 
-            //getting sID
-            IIdentity identity = Thread.CurrentPrincipal.Identity;
-            WindowsIdentity windowsIdentity = identity as WindowsIdentity;
-            string sId = windowsIdentity.User.ToString();
+                //getting sID
+                /*IIdentity identity = Thread.CurrentPrincipal.Identity;
+                WindowsIdentity windowsIdentity = identity as WindowsIdentity;
+                string sId = windowsIdentity.User.ToString();*/
 
-            using (ServiceWCFClient proxy = new ServiceWCFClient(binding, address))
-            {
-                DataBaseEntry dbEntry = new DataBaseEntry();
-                dbEntry.TimeStamp = newTimestamp;
-
-                if (action != "")
-                    dbEntry.ActionName = action;
-                    
-                bool eventModified = proxy.ModifyEvent(id, dbEntry, sId);
-                if(eventModified)
+                using (ServiceWCFClient proxy = new ServiceWCFClient(binding, address))
                 {
-                    NotifySubscribedUsers();
-                }
-                return eventModified;
+                    DataBaseEntry dbEntry = new DataBaseEntry();
+                    dbEntry.TimeStamp = newTimestamp;
 
+                    if (action != "")
+                        dbEntry.ActionName = action;
+
+                    bool eventModified = proxy.ModifyEvent(id, dbEntry, sid);
+                    if (eventModified)
+                    {
+                        NotifySubscribedUsers();
+                    }
+                    return eventModified;
+                }
+            }
+            else
+            {
+                string message = "Access is denied. User has tried to call UpdateEvent method." +
+                                    " For this method need to be member of group Modifier.";
+                SecurityException securityException = new SecurityException { Message = message };
+                throw new FaultException<SecurityException>(securityException, message);
             }
         }
 
