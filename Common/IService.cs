@@ -12,7 +12,7 @@ namespace Common
 	public interface IService
 	{
 		[OperationContract]
-		void LogAction(byte[] message, byte[] signature, string sid);
+		void LogAction(byte[] actionSid, byte[] signature);
 
 		[OperationContract]
 		[FaultContract(typeof(SecurityException))]
@@ -20,19 +20,19 @@ namespace Common
 
 		[OperationContract]
 		[FaultContract(typeof(SecurityException))]
-		List<DataBaseEntry> ReadAllEvents();
+		byte[] ReadAllEvents(out byte[] signature);
 
 		[OperationContract]
 		[FaultContract(typeof(SecurityException))]
-		bool UpdateEvent(int id, string action, DateTime newTimestamp);
+		bool UpdateEvent(byte[] updatedData,byte[] signature);//int id, string action, DateTime newTimestamp
 
 		[OperationContract]
 		[FaultContract(typeof(SecurityException))]
-		bool DeleteEvent(int id);
+		bool DeleteEvent(byte[] id, byte[] signature);
 
 		[OperationContract]
 		[FaultContract(typeof(SecurityException))]
-		int Subscribe();
+		byte[] Subscribe(out byte[] signature);
 
 	}
 }

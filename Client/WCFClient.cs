@@ -18,7 +18,7 @@ namespace Client
 	{
 		IService factory;
 		private static string srvCertCN = "sbesservice";
-
+		string cltCertCN = Formatter.ParseName(WindowsIdentity.GetCurrent().Name);
 
 		public WCFClient(NetTcpBinding binding, EndpointAddress address)
 			: base(binding, address)
@@ -46,11 +46,17 @@ namespace Client
 			this.Close();
 		}
 
-		public void LogAction(byte[] message, byte[] signature, string sid)
+		public void LogAction(string message, string sid)
 		{
 			try
 			{
-				factory.LogAction(message, signature, sid);
+				var clientCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, cltCertCN);
+
+				actionAndSid data = new actionAndSid(message,sid);
+
+				byte[] encodedMessage = Crypto3DES.EncryptMessage(XmlIO.SerializeObject(data), clientCert.GetPublicKeyString());
+				byte[] signature = DigitalSignature.Create(XmlIO.SerializeObject(data), clientCert);
+				factory.LogAction(encodedMessage,signature);
 			}
 			catch (Exception e)
 			{
@@ -72,7 +78,6 @@ namespace Client
 
 				if (DigitalSignature.Verify(decryptedMessage, signature, serviceCert))
 				{
-                    Console.WriteLine(UTF8Encoding.UTF8.GetString(decryptedMessage));
 					var retList= XmlIO.DeSerializeObject<List<DataBaseEntry>>(decryptedMessage);
 					return retList;
 				}
@@ -89,7 +94,19 @@ namespace Client
         {
 			try
 			{
-				return factory.ReadAllEvents();
+				byte[] signature = null;
+				byte[] encodedMyEvents = factory.ReadMyEvents(out signature);
+
+				var serviceCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvCertCN);
+
+
+				byte[] decryptedMessage = Crypto3DES.DecryptMessage(encodedMyEvents, serviceCert.GetPublicKeyString());
+
+				if (DigitalSignature.Verify(decryptedMessage, signature, serviceCert))
+				{
+					var retList = XmlIO.DeSerializeObject<List<DataBaseEntry>>(decryptedMessage);
+					return retList;
+				}
 			}
 			catch (FaultException<SecurityException> e)
 			{
@@ -106,7 +123,13 @@ namespace Client
         {
 			try
 			{
-				return factory.UpdateEvent(id, action, newTime);
+				var clientCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, cltCertCN);
+				UpdateData ud = new UpdateData(id, newTime, action);
+
+				byte[] encodedMessage = Crypto3DES.EncryptMessage(XmlIO.SerializeObject(ud), clientCert.GetPublicKeyString());
+				byte[] signature = DigitalSignature.Create(XmlIO.SerializeObject(ud), clientCert);
+
+				return factory.UpdateEvent(encodedMessage,signature);
 			}
 			catch (Exception e)
 			{
@@ -120,7 +143,11 @@ namespace Client
         {
 			try
 			{
-				return factory.DeleteEvent(id);
+				var clientCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, cltCertCN);
+
+				byte[] encodedMessage = Crypto3DES.EncryptMessage(XmlIO.SerializeObject(id), clientCert.GetPublicKeyString());
+				byte[] signature = DigitalSignature.Create(XmlIO.SerializeObject(id), clientCert);
+				return factory.DeleteEvent(encodedMessage,signature);
 			}
 			catch (Exception e)
 			{
@@ -133,7 +160,20 @@ namespace Client
         {
             try
             {
-				return factory.Subscribe();
+				byte[] signature = null;
+				byte[] encodedMyEvents = factory.Subscribe(out signature);
+
+				var serviceCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvCertCN);
+
+
+				byte[] decryptedMessage = Crypto3DES.DecryptMessage(encodedMyEvents, serviceCert.GetPublicKeyString());
+
+				if (DigitalSignature.Verify(decryptedMessage, signature, serviceCert))
+				{
+					int port = XmlIO.DeSerializeObject<int>(decryptedMessage);
+					return port;
+				}
+				return 1;
             }
             catch (Exception e)
             {
