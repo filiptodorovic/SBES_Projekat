@@ -56,13 +56,25 @@ namespace Service
                    "For this method need to be member of group Supervisor.");
                 throw new FaultException<SecurityException>(new SecurityException(message));
             }
-           
+
+            //ako ne uspe
+            /*
+            try
+                {
+                    Audit.AuthorizationFailed(userName,
+                        OperationContext.Current.IncomingMessageHeaders.Action, "ReadAll method need Supervise permission.");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+             */
+
         }
 
 
         public List<DataBaseEntry> ReadMyEvents()
         {
-            
             string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
        
             return DataBaseCRUD.ReadAllEntries().Where(x => x.Username == username).ToList();
@@ -144,7 +156,15 @@ namespace Service
             /*IIdentity identity = Thread.CurrentPrincipal.Identity;
             WindowsIdentity windowsIdentity = identity as WindowsIdentity;
             string sId = windowsIdentity.User.ToString();*/
-
+            try
+            {
+                Audit.AuthorizationSuccess(username,
+                    OperationContext.Current.IncomingMessageHeaders.Action);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
             string decryptedMessage = Crypto3DES.DecryptMessage(message, clientCert.GetPublicKeyString());
             if (DigitalSignature.Verify(decryptedMessage, signature, clientCert))
             {
