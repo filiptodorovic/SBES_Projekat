@@ -24,22 +24,34 @@ namespace Service
       
         public bool DeleteEvent(int id)
         {
-            NetTcpBinding binding = new NetTcpBinding();
-            EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:7000/ILoadBalancer"));
-
-            binding.Security.Mode = SecurityMode.Transport;
-            binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
-            binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
-
-            using (ServiceWCFClient proxy = new ServiceWCFClient(binding, address))
+            string group = Formatter.ParseGroup(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+            if (group.Equals("Modifier"))
             {
-                bool eventDeleted = proxy.DeleteEvent(id);
-                if(eventDeleted)
+                NetTcpBinding binding = new NetTcpBinding();
+                EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:7000/ILoadBalancer"));
+
+                binding.Security.Mode = SecurityMode.Transport;
+                binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
+                binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
+
+                using (ServiceWCFClient proxy = new ServiceWCFClient(binding, address))
                 {
-                    NotifySubscribedUsers();
+                    bool eventDeleted = proxy.DeleteEvent(id);
+                    if (eventDeleted)
+                    {
+                        NotifySubscribedUsers();
+                    }
+                    return eventDeleted;
                 }
-                return eventDeleted;
             }
+            else
+            {
+                string message = "Access is denied. User has tried to call DeleteEvents method." +
+                   " For this method need to be member of group Modifier.";
+                SecurityException securityException = new SecurityException { Message = message };
+                throw new FaultException<SecurityException>(securityException, message);
+            }
+            
         }
 
 
