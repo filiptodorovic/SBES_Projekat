@@ -163,45 +163,6 @@ namespace Service
                 return;
             
         }
-
-        private static byte[] Serialize(IEnumerable<DataBaseEntry> items)
-        {
-            using (MemoryStream m = new MemoryStream())
-            {
-                using (BinaryWriter writer = new BinaryWriter(m, System.Text.Encoding.UTF8, true))
-                {
-                    foreach (var item in items)
-                    {
-                        var itemBytes = item.Serialize();
-                        writer.Write(itemBytes.Length);
-                        writer.Write(itemBytes);
-                    }
-
-                }
-
-                return m.ToArray();
-            }
-        }
-
-        private static List<DataBaseEntry> Deserialize(byte[] data)
-        {
-            var ret = new List<DataBaseEntry>();
-            using (MemoryStream m = new MemoryStream(data))
-            {
-                using (BinaryReader reader = new BinaryReader(m, System.Text.Encoding.UTF8))
-                {
-                    while (m.Position < m.Length)
-                    {
-                        var itemLength = reader.ReadInt32();
-                        var itemBytes = reader.ReadBytes(itemLength);
-                        var item = DataBaseEntry.Desserialize(itemBytes);
-                        ret.Add(item);
-                    }
-                }
-            }
-
-            return ret;
-        }
         
 
         public byte[] ReadMyEvents(out byte[] signature)
@@ -209,7 +170,8 @@ namespace Service
             string srvcrtCN = "sbesservice";
             var srvCrt = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvcrtCN);
 
-            List<DataBaseEntry> retList = DataBaseCRUD.ReadAllEntries().Where(x => x.Username=="filip");
+            string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+            List<DataBaseEntry> retList = DataBaseCRUD.ReadAllEntries().Where(x => x.Username == username).ToList();
 
             byte[] byteList = XmlIO.SerializeObject(retList);
 
