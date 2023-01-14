@@ -13,13 +13,15 @@ namespace LoadBalancer
     {
         public bool DeleteEvent(int id)
         {
-            ThreadPool.QueueUserWorkItem(ThreadDelete, id);
+            //ThreadPool.QueueUserWorkItem(ThreadDelete, id);
+            ThreadPool.QueueUserWorkItem(new WaitCallback(ThreadDelete), id);
             return true;
         }
 
         public bool ModifyEvent(int id, DataBaseEntry entry, string sId)
         {
-            ThreadPool.QueueUserWorkItem(ThreadUpdate,new Object[] { id, entry, sId });
+            //ThreadPool.QueueUserWorkItem(ThreadUpdate,new Object[] { id, entry, sId });
+            ThreadPool.QueueUserWorkItem(new WaitCallback(ThreadUpdate), (new Object[] { id, entry, sId }));
             return true;
         }
 

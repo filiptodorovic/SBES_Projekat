@@ -16,6 +16,7 @@ namespace Client
             {
                 Console.WriteLine(dataBaseEntry);
             }
+            Console.WriteLine("\n\n\n");
         }
     }
 }
