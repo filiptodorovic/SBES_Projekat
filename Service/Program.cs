@@ -20,7 +20,7 @@ namespace Service
     {
         static void Main(string[] args)
         {
-			string srvCertCN = "sbesservice";
+			string srvCertCN = Formatter.ParseName(WindowsIdentity.GetCurrent().Name);
 			NetTcpBinding binding = new NetTcpBinding();
 			binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Certificate;
 

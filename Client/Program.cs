@@ -134,7 +134,7 @@ namespace Client
                                 Console.WriteLine("Success");
                             }
                             else {
-                                Console.WriteLine("Failed to update!");
+                                Console.WriteLine("Failed to update, you can modify only events you created!");
                             }
                             break;
                         case "4":
