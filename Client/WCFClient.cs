@@ -3,7 +3,9 @@ using DataBase;
 using SecurityManager;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.ServiceModel;
@@ -12,9 +14,11 @@ using System.Threading.Tasks;
 
 namespace Client
 {
-	public class WCFClient : ChannelFactory<IService>, IService, IDisposable
+	public class WCFClient : ChannelFactory<IService>, IDisposable
 	{
 		IService factory;
+		private static string srvCertCN = "sbesservice";
+
 
 		public WCFClient(NetTcpBinding binding, EndpointAddress address)
 			: base(binding, address)
@@ -58,7 +62,21 @@ namespace Client
         {
 			try
 			{
-				return factory.ReadMyEvents();
+				byte[] signature=null;
+				byte[] encodedMyEvents = factory.ReadMyEvents(out signature);
+
+				var serviceCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvCertCN);
+
+
+				byte[] decryptedMessage = Crypto3DES.DecryptMessage(encodedMyEvents, serviceCert.GetPublicKeyString());
+
+				if (DigitalSignature.Verify(decryptedMessage, signature, serviceCert))
+				{
+                    Console.WriteLine(UTF8Encoding.UTF8.GetString(decryptedMessage));
+					var retList= XmlIO.DeSerializeObject<List<DataBaseEntry>>(decryptedMessage);
+					return retList;
+				}
+
 			}
 			catch (Exception e)
 			{

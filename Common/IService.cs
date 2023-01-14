@@ -16,7 +16,7 @@ namespace Common
 
 		[OperationContract]
 		[FaultContract(typeof(SecurityException))]
-		List<DataBaseEntry> ReadMyEvents();
+		byte[] ReadMyEvents(out byte[] signature);
 
 		[OperationContract]
 		[FaultContract(typeof(SecurityException))]
