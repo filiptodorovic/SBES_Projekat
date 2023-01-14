@@ -35,7 +35,13 @@ namespace Service
 			host.Credentials.ClientCertificate.Authentication.RevocationMode = X509RevocationMode.NoCheck;
 
 			host.Credentials.ServiceCertificate.Certificate = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvCertCN);
-			
+
+			ServiceSecurityAuditBehavior newAudit = new ServiceSecurityAuditBehavior();
+			newAudit.AuditLogLocation = AuditLogLocation.Application;
+			newAudit.ServiceAuthorizationAuditLevel = AuditLevel.SuccessOrFailure;
+
+			host.Description.Behaviors.Remove<ServiceSecurityAuditBehavior>();
+			host.Description.Behaviors.Add(newAudit);
 
 			try
 			{
