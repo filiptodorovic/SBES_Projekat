@@ -18,6 +18,7 @@ namespace Common
 		[FaultContract(typeof(SecurityException))]
 		byte[] ReadMyEvents(out byte[] signature);
 
+		
 		[OperationContract]
 		[FaultContract(typeof(SecurityException))]
 		byte[] ReadAllEvents(out byte[] signature);

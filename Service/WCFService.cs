@@ -27,6 +27,12 @@ namespace Service
 
         public bool DeleteEvent(byte[] id, byte[] signature)
         {
+            string group = Formatter.ParseGroup(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+            string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+            if (group.Equals("Modifier"))
+            {
+                NetTcpBinding binding = new NetTcpBinding();
+                EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:7000/ILoadBalancer"));
             string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
             var clientCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, username);
 
@@ -43,6 +49,45 @@ namespace Service
                 binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
                 binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
 
+                try
+                {
+                    Audit.AuthorizationSuccess(username,
+                        OperationContext.Current.IncomingMessageHeaders.Action);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+
+                using (ServiceWCFClient proxy = new ServiceWCFClient(binding, address))
+                {
+                    bool eventDeleted = false;
+                    eventDeleted = proxy.DeleteEvent(id);
+                    if (eventDeleted)
+                    {
+                        NotifySubscribedUsers();
+                    }
+                    return eventDeleted;
+                }
+            }
+            else
+            {
+                try
+                {
+                    Audit.AuthorizationFailed(username,
+                        OperationContext.Current.IncomingMessageHeaders.Action, "DeleteEvent method need Modifier permission.");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                string message = "Access is denied. User has tried to call DeleteEvents method." +
+                   " For this method need to be member of group Modifier.";
+                SecurityException securityException = new SecurityException { Message = message };
+                throw new FaultException<SecurityException>(securityException, message);
+            }
+            
+        }
                 using (ServiceWCFClient proxy = new ServiceWCFClient(binding, address))
                 {
                     bool eventDeleted = proxy.DeleteEvent(idUser);
@@ -59,6 +104,37 @@ namespace Service
 
         public byte[] ReadAllEvents(out byte[] signature)
         {
+            string group = Formatter.ParseGroup(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+            string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+            if (group.Equals("Supervisor"))
+            {
+                try
+                {
+                    Audit.AuthorizationSuccess(username,
+                        OperationContext.Current.IncomingMessageHeaders.Action);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                return DataBaseCRUD.ReadAllEntries();
+            }
+            else
+            {
+                try
+                {
+                    Audit.AuthorizationFailed(username,
+                        OperationContext.Current.IncomingMessageHeaders.Action, "ReadAll method need Supervisor permission.");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                string message = "Access is denied. User has tried to call ReadAllEvents method." +
+                    " For this method need to be member of group Supervisor.";
+                SecurityException securityException = new SecurityException { Message = message };
+                throw new FaultException<SecurityException>(securityException, message);
+            }
             var srvCrt = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvcrtCN);
 
             string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
@@ -77,7 +153,39 @@ namespace Service
         {
             var srvCrt = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvcrtCN);
 
+            string group = Formatter.ParseGroup(ServiceSecurityContext.Current.PrimaryIdentity.Name);
             string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+
+            if (group.Equals("Reader"))
+            {
+                try
+                {
+                    Audit.AuthorizationSuccess(username,
+                        OperationContext.Current.IncomingMessageHeaders.Action);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                return DataBaseCRUD.ReadAllEntries().Where(x => x.Username == username).ToList();
+            }
+            else
+            {
+                try
+                {
+                    Audit.AuthorizationFailed(username,
+                        OperationContext.Current.IncomingMessageHeaders.Action, "ReadMyEvents method need Reader permission.");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                string message = "Access is denied. User has tried to call ReadMyEvents method." +
+                                   " For this method need to be member of group Reader.";
+                SecurityException securityException = new SecurityException { Message = message };
+                throw new FaultException<SecurityException>(securityException, message);
+            }
+        }
             List<DataBaseEntry> retList = DataBaseCRUD.ReadAllEntries().Where(x => x.Username == username).ToList();
 
 
@@ -110,11 +218,27 @@ namespace Service
 
                 NetTcpBinding binding = new NetTcpBinding();
                 EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:7000/ILoadBalancer"));
+        public bool UpdateEvent(int id, string action, DateTime newTimestamp, string sid)
+        {
+            string group = Formatter.ParseGroup(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+            string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+            if (group.Equals("Modifier")) { 
+                NetTcpBinding binding = new NetTcpBinding();
+                EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:7000/ILoadBalancer"));
 
                 binding.Security.Mode = SecurityMode.Transport;
                 binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
                 binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
 
+                try
+                {
+                    Audit.AuthorizationSuccess(username,
+                        OperationContext.Current.IncomingMessageHeaders.Action);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
                 //getting sID
                 IIdentity identity = Thread.CurrentPrincipal.Identity;
                 WindowsIdentity windowsIdentity = identity as WindowsIdentity;
@@ -139,6 +263,35 @@ namespace Service
             }
             
             return false;
+                    if (action != "")
+                        dbEntry.ActionName = action;
+
+                    bool eventModified = proxy.ModifyEvent(id, dbEntry, sid);
+                    if (eventModified)
+                    {
+                        NotifySubscribedUsers();
+                    }
+                    return eventModified;
+                }
+            }
+            else
+            {
+                try
+                {
+                    Audit.AuthorizationFailed(username,
+                        OperationContext.Current.IncomingMessageHeaders.Action, "UpdateEvent method need Modifier permission.");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                string message = "Access is denied. User has tried to call UpdateEvent method." +
+                                    " For this method need to be member of group Modifier.";
+                SecurityException securityException = new SecurityException { Message = message };
+                throw new FaultException<SecurityException>(securityException, message);
+            }
+        }
+
 
             
         }
@@ -146,20 +299,28 @@ namespace Service
 
         public byte[] Subscribe(out byte[] signature)
         {
-            int port = 8000;
+            string group = Formatter.ParseGroup(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+            string username = Formatter.ParseName(ServiceSecurityContext.Current.PrimaryIdentity.Name);
+            if (group.Equals("Subscriber"))
+            {
+                int port = 8000;
 
-            //get the clients username
-            IIdentity identity = Thread.CurrentPrincipal.Identity;
-            WindowsIdentity windowsIdentity = identity as WindowsIdentity;
-            string username = windowsIdentity.Name;
+                try
+                {
+                    Audit.AuthorizationSuccess(username,
+                        OperationContext.Current.IncomingMessageHeaders.Action);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
 
-            //update subscribeUsers evidency
-            if (subscribedUsers.ContainsKey(username))
-                subscribedUsers[username] = port + subscriptionCounter;
-            else
-                subscribedUsers.Add(username, port + subscriptionCounter);
+                if (subscribedUsers.ContainsKey(username))
+                    subscribedUsers[username] = port + subscriptionCounter;
+                else
+                    subscribedUsers.Add(username, port + subscriptionCounter);
 
-            subscriptionCounter++;
+                subscriptionCounter++;
 
             var clientCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvcrtCN);
 
@@ -168,6 +329,26 @@ namespace Service
 
             //return the port on which  subscribed client will listen for notifications
             return encodedMessage;
+        }
+                //return the port on which  subscribed client will listen for notifications
+                return subscribedUsers[username];
+            }
+            else
+            {
+                try
+                {
+                    Audit.AuthorizationFailed(username,
+                        OperationContext.Current.IncomingMessageHeaders.Action, "Subscribe method need Subscribe permission.");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                string message = "Access is denied. User has tried to call Subscribe method." +
+                                    " For this method need to be member of group Subscriber.";
+                SecurityException securityException = new SecurityException { Message = message };
+                throw new FaultException<SecurityException>(securityException, message);
+            }
         }
 
         private static void NotifySubscribedUsers()
@@ -194,6 +375,16 @@ namespace Service
             string sId = windowsIdentity.User.ToString();*/
 
             byte[] decryptedMessage = Crypto3DES.DecryptMessage(actionSid, clientCert.GetPublicKeyString());
+            try
+            {
+                Audit.AuthorizationSuccess(username,
+                    OperationContext.Current.IncomingMessageHeaders.Action);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            string decryptedMessage = Crypto3DES.DecryptMessage(message, clientCert.GetPublicKeyString());
             if (DigitalSignature.Verify(decryptedMessage, signature, clientCert))
             {
                 var obj = XmlIO.DeSerializeObject<ActionAndSid>(decryptedMessage);

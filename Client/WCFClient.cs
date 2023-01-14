@@ -83,6 +83,10 @@ namespace Client
 				}
 
 			}
+			catch (FaultException<SecurityException> e)
+			{
+				Console.WriteLine("[ReadMyEvents] ERROR = {0}", e.Detail.Message);
+			}
 			catch (Exception e)
 			{
 				Console.WriteLine("[ReadMyEvents] ERROR = {0}", e.Message);
@@ -119,7 +123,7 @@ namespace Client
 			return null;
 		}
 
-        public bool UpdateEvent(int id, string action,DateTime newTime)
+        public bool UpdateEvent(int id, string action, DateTime newTime, string sid)
         {
 			try
 			{
@@ -131,11 +135,15 @@ namespace Client
 
 				return factory.UpdateEvent(encodedMessage,signature);
 			}
+			catch (FaultException<SecurityException> e)
+			{
+				Console.WriteLine("[UpdateEvent] ERROR = {0}", e.Detail.Message);
+			}
 			catch (Exception e)
 			{
 				Console.WriteLine("[UpdateEvent] ERROR = {0}", e.Message);
-				return false;
 			}
+			return false;
 		}
 
        
@@ -149,11 +157,15 @@ namespace Client
 				byte[] signature = DigitalSignature.Create(XmlIO.SerializeObject(id), clientCert);
 				return factory.DeleteEvent(encodedMessage,signature);
 			}
+			catch (FaultException<SecurityException> e)
+			{
+				Console.WriteLine("[DeleteEvent] ERROR = {0}", e.Detail.Message);
+			}
 			catch (Exception e)
 			{
 				Console.WriteLine("[DeleteEvent] ERROR = {0}", e.Message);
-				return false;
 			}
+			return false;
 		}
 
 		public int Subscribe()
