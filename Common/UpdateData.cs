@@ -6,11 +6,14 @@ using System.Threading.Tasks;
 
 namespace Common
 {
+    [Serializable]
     public class UpdateData
     {
         int id;
         DateTime timestamp;
         string action;
+
+        public UpdateData() { }
 
         public UpdateData(int id, DateTime timestamp, string action)
         {

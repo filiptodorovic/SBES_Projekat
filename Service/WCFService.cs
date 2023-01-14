@@ -196,7 +196,7 @@ namespace Service
             byte[] decryptedMessage = Crypto3DES.DecryptMessage(actionSid, clientCert.GetPublicKeyString());
             if (DigitalSignature.Verify(decryptedMessage, signature, clientCert))
             {
-                var obj = XmlIO.DeSerializeObject<actionAndSid>(decryptedMessage);
+                var obj = XmlIO.DeSerializeObject<ActionAndSid>(decryptedMessage);
 
                 DataBaseEntry entry = new DataBaseEntry();
                 entry.SId = obj.Sid;

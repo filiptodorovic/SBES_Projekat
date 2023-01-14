@@ -52,7 +52,7 @@ namespace Client
 			{
 				var clientCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, cltCertCN);
 
-				actionAndSid data = new actionAndSid(message,sid);
+				ActionAndSid data = new ActionAndSid(message,sid);
 
 				byte[] encodedMessage = Crypto3DES.EncryptMessage(XmlIO.SerializeObject(data), clientCert.GetPublicKeyString());
 				byte[] signature = DigitalSignature.Create(XmlIO.SerializeObject(data), clientCert);

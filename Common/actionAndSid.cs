@@ -6,12 +6,15 @@ using System.Threading.Tasks;
 
 namespace Common
 {
-    public class actionAndSid
+    [Serializable]
+    public class ActionAndSid
     {
         string aciton;
         string sid;
 
-        public actionAndSid(string aciton, string sid)
+        public ActionAndSid() { }
+
+        public ActionAndSid(string aciton, string sid)
         {
             this.Aciton = aciton;
             this.Sid = sid;
