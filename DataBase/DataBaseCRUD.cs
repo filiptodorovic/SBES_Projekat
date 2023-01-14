@@ -156,7 +156,7 @@ namespace DataBase
             catch(Exception e)
             {
                 Console.WriteLine("Exception: " + e.Message);
-                return new List<DataBaseEntry>();
+                return null;
             }
         }
     }

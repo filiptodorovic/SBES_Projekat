@@ -15,21 +15,23 @@ namespace Common
 		void LogAction(byte[] message, byte[] signature, string sid);
 
 		[OperationContract]
+		[FaultContract(typeof(SecurityException))]
 		List<DataBaseEntry> ReadMyEvents();
 
 		[OperationContract]
+		[FaultContract(typeof(SecurityException))]
 		List<DataBaseEntry> ReadAllEvents();
 
 		[OperationContract]
-		bool UpdateEvent(int id, string action,DateTime newTimestamp);
+		[FaultContract(typeof(SecurityException))]
+		bool UpdateEvent(int id, string action, DateTime newTimestamp);
 
 		[OperationContract]
+		[FaultContract(typeof(SecurityException))]
 		bool DeleteEvent(int id);
 
 		[OperationContract]
-		void Supervise();
-
-		[OperationContract]
+		[FaultContract(typeof(SecurityException))]
 		int Subscribe();
 
 	}

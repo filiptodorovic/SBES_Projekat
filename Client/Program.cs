@@ -20,7 +20,7 @@ namespace Client
         //on this host client listens for notifications
         private static ServiceHost subscribedHost;
         private static bool isSubscribed = false;
-        private static string srvCertCN = "sbesservice";
+        private static string srvCertCN = "vidak";
         private static X509Certificate2 clientCert = null;
         static void Main(string[] args)
         {
@@ -88,8 +88,7 @@ namespace Client
                 Console.WriteLine("{2} Read all events");
                 Console.WriteLine("{3} Update an event");
                 Console.WriteLine("{4} Delete an event");
-                Console.WriteLine("{5} Supervise all events");
-                Console.WriteLine("{6} Subscribe to be notified about updates");
+                Console.WriteLine("{5} Subscribe to be notified about updates");
                 Console.WriteLine("{q} Exit DB manupulation");
                 input = Console.ReadLine();
 
@@ -146,9 +145,6 @@ namespace Client
                             }
                             break;
                         case "5":
-                            proxy.Supervise();
-                            break;
-                        case "6":
                             if (!isSubscribed)
                             {
                                 int port = proxy.Subscribe();
